@@ -1,0 +1,3498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLP Maturity Journey — 12-Month Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1a2236;
+  --bg-card: #141b2d;
+  --border: #243049;
+  --border-light: #2d3a5a;
+  --text-primary: #e8ecf5;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-cyan: #06b6d4;
+  --accent-amber: #f59e0b;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+  --accent-violet: #8b5cf6;
+  --gradient-progress: linear-gradient(135deg, #f43f5e 0%, #f59e0b 35%, #06b6d4 70%, #10b981 100%);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter Tight', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 100%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+}
+
+.app-container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+
+/* HEADER */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand-mark {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-weight: 800; font-size: 22px; color: white;
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
+}
+.brand-text h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.brand-text p {
+  font-size: 12px; color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+.role-switcher { display: flex; gap: 4px; background: var(--bg-tertiary); padding: 4px; border-radius: 10px; }
+.role-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 13px; font-weight: 500;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.role-btn:hover { color: var(--text-primary); }
+.role-btn.active {
+  background: var(--bg-card);
+  color: var(--accent-cyan);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.role-btn .icon { font-size: 14px; }
+
+/* TIME TRAVEL SLIDER */
+.time-travel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.time-travel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+.time-travel-header h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 18px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+}
+.month-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px; font-weight: 700;
+  color: var(--accent-cyan);
+}
+.month-phase {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-top: 4px;
+}
+
+.slider-container { position: relative; padding: 20px 0; }
+.slider-track {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.slider-progress {
+  position: absolute; top: 0; left: 0; height: 100%;
+  background: var(--gradient-progress);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+input[type="range"] {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.month-markers {
+  display: flex; justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+.month-marker {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  position: relative;
+  cursor: pointer;
+}
+.month-marker.active { color: var(--accent-cyan); font-weight: 700; }
+.phase-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+}
+.phase-label {
+  flex: 1;
+  text-align: center;
+  padding: 4px 8px;
+  border-right: 1px solid var(--border);
+}
+.phase-label:last-child { border-right: none; }
+.phase-label.active {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+/* KPI TILES */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-cyan);
+}
+.kpi-card.alerts::before { background: var(--accent-amber); }
+.kpi-card.fpr::before { background: var(--accent-rose); }
+.kpi-card.threats::before { background: var(--accent-emerald); }
+.kpi-card.roi::before { background: var(--accent-violet); }
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+.kpi-value {
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  transition: all 0.3s;
+}
+.kpi-trend {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.kpi-trend.positive { color: var(--accent-emerald); }
+.kpi-trend.negative { color: var(--accent-rose); }
+.kpi-sublabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* MAIN CONTENT VIEWS */
+.view { display: none; }
+.view.active { display: block; }
+
+/* CHARTS GRID */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+.chart-card.full { grid-column: 1 / -1; }
+.chart-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.chart-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+.chart-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
+.chart-container {
+  position: relative;
+  height: 280px;
+}
+
+/* TABS */
+.content-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  padding: 4px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+.tab-btn {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--bg-card);
+  color: var(--accent-cyan);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* LOG VIEWER */
+.logs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.logs-grid::-webkit-scrollbar { width: 6px; }
+.logs-grid::-webkit-scrollbar-track { background: var(--bg-tertiary); border-radius: 3px; }
+.logs-grid::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+.log-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.log-card:hover {
+  border-color: var(--accent-cyan);
+  background: var(--bg-card);
+}
+.log-card-header {
+  display: flex; justify-content: space-between;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.log-id { color: var(--text-muted); font-size: 10px; }
+.log-severity {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.log-severity.critical { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+.log-severity.high { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+.log-severity.medium { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+.log-severity.low { background: rgba(100, 116, 139, 0.2); color: var(--text-secondary); }
+
+.log-category {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-card);
+  border-radius: 4px;
+  font-size: 9px;
+  color: var(--accent-violet);
+  margin-bottom: 6px;
+}
+.log-detail { color: var(--text-secondary); margin: 3px 0; }
+.log-detail .label { color: var(--text-muted); }
+.log-detail .value { color: var(--text-primary); }
+.log-verdict {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  align-items: center;
+}
+.verdict-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.verdict-badge.tp { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+.verdict-badge.fp { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+.verdict-badge.blocked { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+/* TUNING TIMELINE */
+.tuning-timeline {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.timeline-list {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.timeline-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-item:last-child { border-bottom: none; }
+.timeline-marker {
+  width: 36px; height: 36px;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-cyan);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+.timeline-content { flex: 1; }
+.timeline-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.timeline-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 8px;
+}
+.timeline-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.timeline-impact {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--accent-emerald);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ROLE SWIMLANE */
+.role-swimlane {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+.role-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.role-row:last-child { border-bottom: none; }
+.role-info {
+  display: flex; align-items: center; gap: 12px;
+}
+.role-avatar {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.role-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+.role-title {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.role-months {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3px;
+}
+.role-month-cell {
+  height: 24px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.role-month-cell.active {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+}
+.role-month-cell.current {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 2px;
+}
+.role-month-cell:hover .cell-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cell-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+/* CEO EXECUTIVE VIEW */
+.executive-hero {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-tertiary) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.executive-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -10%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.exec-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent-cyan);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.exec-headline {
+  font-family: 'Fraunces', serif;
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  max-width: 700px;
+}
+.exec-subhead {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.exec-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.exec-metric-big {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  text-align: left;
+}
+.exec-metric-value {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.exec-metric-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.exec-metric-context {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* BEFORE/AFTER COMPARISON */
+.compare-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  align-items: stretch;
+  margin-top: 20px;
+}
+.compare-side {
+  padding: 24px;
+  border-radius: 12px;
+}
+.compare-side.before {
+  background: rgba(244, 63, 94, 0.05);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+.compare-side.after {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.compare-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--text-muted);
+}
+.compare-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+.compare-side.before .compare-label { color: var(--accent-rose); }
+.compare-side.after .compare-label { color: var(--accent-emerald); }
+.compare-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.compare-stat:last-child { border-bottom: none; }
+.compare-stat-label { color: var(--text-secondary); }
+.compare-stat-value { font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+/* INSIGHT CARDS */
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.insight-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+}
+.insight-icon {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+.insight-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.insight-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* TRIAGE SIMULATOR */
+.triage-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+/* FEEDBACK LOOP VISUALIZATION */
+.feedback-loop {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  border: 1px dashed var(--border-light);
+}
+.flow-step {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+.flow-step.active {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(139, 92, 246, 0.1));
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.flow-step .step-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  font-size: 9px;
+  opacity: 0.7;
+}
+.flow-step .step-value {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+/* TUNING TICKETS GENERATED FROM TRIAGE */
+.tickets-generated {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.tickets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.tickets-counter {
+  display: flex;
+  gap: 16px;
+}
+.counter-pill {
+  padding: 6px 12px;
+  background: var(--bg-tertiary);
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.counter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.counter-dot.open { background: var(--accent-amber); }
+.counter-dot.resolved { background: var(--accent-emerald); }
+.counter-dot.proposed { background: var(--accent-cyan); }
+
+.ticket-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+.ticket-item {
+  background: var(--bg-tertiary);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  position: relative;
+  animation: slideIn 0.4s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.ticket-item.resolved {
+  border-left-color: var(--accent-emerald);
+  opacity: 0.85;
+}
+.ticket-item.escalated {
+  border-left-color: var(--accent-rose);
+}
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.ticket-id { color: var(--text-muted); }
+.ticket-status {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.ticket-status.open { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+.ticket-status.resolved { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+.ticket-status.escalated { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+.ticket-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  font-family: 'Inter Tight', sans-serif;
+}
+.ticket-detail {
+  color: var(--text-secondary);
+  margin: 4px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.ticket-detail .label { color: var(--text-muted); }
+.ticket-action {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ticket-impact {
+  color: var(--accent-emerald);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.ticket-action-btn {
+  padding: 4px 10px;
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ticket-action-btn:hover { background: #08aabb; }
+
+/* IMPACT METER */
+.impact-meter {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 10px;
+}
+.impact-meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.impact-meter-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-emerald);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.impact-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+.impact-stat {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg-card);
+  border-radius: 8px;
+}
+.impact-stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent-emerald);
+}
+.impact-stat-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+/* POLICY STATE CHANGE INDICATOR */
+.policy-affected {
+  background: var(--bg-tertiary);
+  border-left: 3px solid var(--accent-violet);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.policy-name {
+  color: var(--accent-violet);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.policy-change {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.policy-before {
+  padding: 4px 8px;
+  background: rgba(244, 63, 94, 0.1);
+  color: var(--accent-rose);
+  border-radius: 4px;
+  text-align: center;
+}
+.policy-after {
+  padding: 4px 8px;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-emerald);
+  border-radius: 4px;
+  text-align: center;
+}
+.policy-arrow {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* TICKETS EMPTY STATE */
+.tickets-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+.tickets-empty .icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+/* USER-GENERATED ACTION INDICATOR */
+.timeline-item.user-generated {
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.05), transparent);
+  margin-left: -12px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 8px 8px 0;
+}
+.user-generated-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* ============= ENTERPRISE TICKET MODAL ============= */
+.ticket-expand-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  color: var(--accent-cyan);
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ticket-expand-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-cyan);
+}
+
+.ticket-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease;
+}
+.ticket-modal-overlay.show { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ticket-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  max-width: 1100px;
+  width: 100%;
+  margin: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-card) 100%);
+  border-radius: 16px 16px 0 0;
+}
+.modal-title-block { flex: 1; }
+.modal-ticket-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.modal-close {
+  width: 36px; height: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover {
+  background: var(--accent-rose);
+  color: white;
+  border-color: var(--accent-rose);
+}
+
+.modal-body {
+  padding: 24px 28px;
+}
+
+/* TICKET METADATA STRIP */
+.ticket-meta-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.meta-cell {
+  background: var(--bg-tertiary);
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent-cyan);
+}
+.meta-cell.priority-critical { border-left-color: var(--accent-rose); }
+.meta-cell.priority-high { border-left-color: var(--accent-amber); }
+.meta-cell.priority-medium { border-left-color: var(--accent-cyan); }
+.meta-cell-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.meta-cell-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* TICKET SECTIONS */
+.ticket-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.ticket-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.ticket-section-icon {
+  width: 28px; height: 28px;
+  background: var(--bg-card);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.ticket-section-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+.ticket-section-pill {
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* CODE BLOCK */
+.code-block {
+  background: #0a0e1a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  position: relative;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.code-block-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.copy-btn {
+  padding: 3px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  color: var(--accent-cyan);
+  font-size: 10px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.2s;
+}
+.copy-btn:hover { background: var(--accent-cyan); color: var(--bg-primary); }
+.copy-btn.copied { background: var(--accent-emerald); color: var(--bg-primary); }
+
+.code-line { color: var(--text-primary); }
+.code-line.before { color: var(--accent-rose); position: relative; padding-left: 20px; }
+.code-line.before::before { content: '−'; position: absolute; left: 6px; color: var(--accent-rose); }
+.code-line.after { color: var(--accent-emerald); position: relative; padding-left: 20px; }
+.code-line.after::before { content: '+'; position: absolute; left: 6px; color: var(--accent-emerald); }
+.code-line.comment { color: var(--text-muted); font-style: italic; }
+.code-line.section { color: var(--accent-violet); font-weight: 700; margin-top: 10px; }
+
+/* UI NAVIGATION STEPS */
+.nav-steps {
+  list-style: none;
+  counter-reset: step;
+}
+.nav-step {
+  counter-increment: step;
+  position: relative;
+  padding: 12px 12px 12px 48px;
+  margin-bottom: 8px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.nav-step::before {
+  content: counter(step);
+  position: absolute;
+  left: 12px; top: 12px;
+  width: 24px; height: 24px;
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+.nav-step .nav-action {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.nav-step .nav-path {
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--bg-tertiary);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+/* APPROVAL WORKFLOW */
+.approval-flow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+.approval-stage {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  position: relative;
+}
+.approval-stage::after {
+  content: '→';
+  position: absolute;
+  right: -10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  z-index: 1;
+}
+.approval-stage:last-child::after { display: none; }
+.approval-stage.completed { border-color: var(--accent-emerald); background: rgba(16, 185, 129, 0.05); }
+.approval-stage.current { border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); box-shadow: 0 0 12px rgba(6, 182, 212, 0.2); }
+.approval-role {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.approval-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.approval-status {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+.approval-stage.completed .approval-status { color: var(--accent-emerald); }
+.approval-stage.current .approval-status { color: var(--accent-cyan); }
+
+/* CHECKLIST */
+.checklist {
+  list-style: none;
+  padding: 0;
+}
+.checklist-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  align-items: flex-start;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.checklist-item:hover { background: var(--bg-primary); }
+.checklist-checkbox {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.checklist-item.checked .checklist-checkbox {
+  background: var(--accent-emerald);
+  border-color: var(--accent-emerald);
+  color: white;
+}
+.checklist-item.checked {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* IMPACT FORECAST CARD */
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.forecast-card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  border-top: 2px solid var(--accent-emerald);
+}
+.forecast-value {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent-emerald);
+  margin-bottom: 4px;
+}
+.forecast-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ROLLBACK BLOCK */
+.rollback-block {
+  background: rgba(244, 63, 94, 0.05);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.rollback-title {
+  color: var(--accent-rose);
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* MODAL FOOTER */
+.modal-footer {
+  padding: 20px 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-tertiary);
+  border-radius: 0 0 16px 16px;
+}
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.footer-actions { display: flex; gap: 8px; }
+.btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover { background: var(--bg-primary); }
+.btn-primary {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  border-color: var(--accent-cyan);
+}
+.btn-primary:hover { background: #08aabb; }
+.btn-success {
+  background: var(--accent-emerald);
+  color: var(--bg-primary);
+  border-color: var(--accent-emerald);
+}
+.btn-success:hover { background: #0ea372; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* RESPONSIVE FOR MODAL */
+@media (max-width: 900px) {
+  .ticket-meta-strip { grid-template-columns: repeat(2, 1fr); }
+  .approval-flow { grid-template-columns: 1fr 1fr; }
+  .approval-stage::after { display: none; }
+  .forecast-grid { grid-template-columns: 1fr; }
+}
+.triage-incident {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.triage-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.triage-btn {
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.triage-btn:hover {
+  border-color: var(--accent-cyan);
+  background: var(--bg-card);
+}
+.triage-result {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  font-size: 13px;
+  display: none;
+}
+.triage-result.show { display: block; }
+
+/* ROI CALCULATOR */
+.roi-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+}
+.roi-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+.roi-item {
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  border-left: 3px solid var(--accent-emerald);
+}
+.roi-item-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.roi-item-value {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--accent-emerald);
+}
+.roi-item-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* SECTION HEADERS */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+@media (max-width: 1200px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .exec-metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .insight-grid { grid-template-columns: 1fr; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .compare-arrow { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app-container">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark">D</div>
+    <div class="brand-text">
+      <h1>DLP Maturity Journey</h1>
+      <p>12-Month Program Simulator · Forcepoint DLP</p>
+    </div>
+  </div>
+  <div class="role-switcher">
+    <button class="role-btn active" data-view="ceo"><span class="icon">◆</span> CEO / Board</button>
+    <button class="role-btn" data-view="ciso"><span class="icon">◆</span> CISO</button>
+    <button class="role-btn" data-view="soc"><span class="icon">◆</span> SOC Analyst</button>
+    <button class="role-btn" data-view="admin"><span class="icon">◆</span> DLP Admin</button>
+  </div>
+</header>
+
+<!-- TIME TRAVEL SLIDER -->
+<section class="time-travel">
+  <div class="time-travel-header">
+    <h2>◇ Maturity Timeline</h2>
+    <div style="text-align: right;">
+      <span class="month-display">Month <span id="monthNumber">1</span></span>
+      <span class="month-phase" id="monthPhase">Phase 1 · Discovery</span>
+    </div>
+  </div>
+  <div class="slider-container">
+    <div class="slider-track">
+      <div class="slider-progress" id="sliderProgress" style="width: 8.33%;"></div>
+    </div>
+    <input type="range" id="monthSlider" min="1" max="12" value="1" step="1">
+  </div>
+  <div class="month-markers" id="monthMarkers"></div>
+  <div class="phase-labels">
+    <div class="phase-label active" data-phase="1">M1-3 · DISCOVERY</div>
+    <div class="phase-label" data-phase="2">M4-6 · TUNING</div>
+    <div class="phase-label" data-phase="3">M7-9 · ENFORCEMENT</div>
+    <div class="phase-label" data-phase="4">M10-12 · MATURITY</div>
+  </div>
+</section>
+
+<!-- KPI TILES (always visible) -->
+<section class="kpi-grid">
+  <div class="kpi-card alerts">
+    <div class="kpi-label">Total Alerts (Monthly)</div>
+    <div class="kpi-value" id="kpiAlerts">8,500</div>
+    <div class="kpi-trend" id="kpiAlertsTrend">— Baseline</div>
+    <div class="kpi-sublabel">Down from baseline</div>
+  </div>
+  <div class="kpi-card fpr">
+    <div class="kpi-label">False Positive Rate</div>
+    <div class="kpi-value" id="kpiFPR">87%</div>
+    <div class="kpi-trend" id="kpiFPRTrend">Goal: < 5%</div>
+    <div class="kpi-sublabel">Lower is better</div>
+  </div>
+  <div class="kpi-card threats">
+    <div class="kpi-label">True Threats Caught (cum.)</div>
+    <div class="kpi-value" id="kpiThreats">12</div>
+    <div class="kpi-trend positive" id="kpiThreatsTrend">↑ This month</div>
+    <div class="kpi-sublabel">Confirmed real incidents</div>
+  </div>
+  <div class="kpi-card roi">
+    <div class="kpi-label">Estimated Risk Avoided</div>
+    <div class="kpi-value" id="kpiROI">₹0.8 Cr</div>
+    <div class="kpi-trend positive" id="kpiROITrend">↑ Cumulative</div>
+    <div class="kpi-sublabel">Breach cost avoidance</div>
+  </div>
+</section>
+
+<!-- ============= CEO VIEW ============= -->
+<div class="view active" id="view-ceo">
+
+  <div class="executive-hero">
+    <div class="exec-tagline">EXECUTIVE BRIEFING · MONTH <span id="ceoMonthLabel">1</span></div>
+    <h1 class="exec-headline" id="ceoHeadline">We have visibility into our data flows for the first time</h1>
+    <p class="exec-subhead" id="ceoSubhead">Initial DLP deployment reveals the true picture of how sensitive data moves across our organization. The next 11 months will transform this visibility into measurable risk reduction.</p>
+  </div>
+
+  <div class="exec-metrics-row">
+    <div class="exec-metric-big">
+      <div class="exec-metric-value" id="execRiskReduction">0%</div>
+      <div class="exec-metric-label">Risk Reduction vs Baseline</div>
+      <div class="exec-metric-context">Target: 95% by Month 12</div>
+    </div>
+    <div class="exec-metric-big">
+      <div class="exec-metric-value" id="execIncidentsPrevented">12</div>
+      <div class="exec-metric-label">Incidents Prevented</div>
+      <div class="exec-metric-context">Cumulative since launch</div>
+    </div>
+    <div class="exec-metric-big">
+      <div class="exec-metric-value" id="execComplianceScore">42%</div>
+      <div class="exec-metric-label">Compliance Posture Score</div>
+      <div class="exec-metric-context">DPDP / GDPR / PCI-DSS / HIPAA</div>
+    </div>
+    <div class="exec-metric-big">
+      <div class="exec-metric-value" id="execAuditReady">No</div>
+      <div class="exec-metric-label">Audit-Ready Status</div>
+      <div class="exec-metric-context">Evidence package availability</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Maturity Journey · The Path to {'<'} 5% False Positives</div>
+          <div class="chart-subtitle">FALSE POSITIVE RATE TREND OVER 12 MONTHS</div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="execFprChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">ROI Trajectory</div>
+          <div class="chart-subtitle">CUMULATIVE RISK AVOIDED (₹ CRORE)</div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="execRoiChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="compare-section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Before & After · The Transformation</div>
+        <div class="section-subtitle">Comparing Month 1 baseline to current state</div>
+      </div>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-side before">
+        <div class="compare-label">▲ MONTH 1 — UNTUNED</div>
+        <div class="compare-stat"><span class="compare-stat-label">Monthly Alerts</span><span class="compare-stat-value">8,500</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">False Positive Rate</span><span class="compare-stat-value">87%</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Analyst Hours / Week</span><span class="compare-stat-value">160 hrs</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Real Threats Detected</span><span class="compare-stat-value">2 / month</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Business Disruption</span><span class="compare-stat-value">High</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Compliance Evidence</span><span class="compare-stat-value">None</span></div>
+      </div>
+      <div class="compare-arrow">→</div>
+      <div class="compare-side after" id="compareSideAfter">
+        <div class="compare-label">▼ CURRENT STATE</div>
+        <div class="compare-stat"><span class="compare-stat-label">Monthly Alerts</span><span class="compare-stat-value" id="compareAlerts">8,500</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">False Positive Rate</span><span class="compare-stat-value" id="compareFPR">87%</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Analyst Hours / Week</span><span class="compare-stat-value" id="compareHours">160 hrs</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Real Threats Detected</span><span class="compare-stat-value" id="compareThreats">2 / month</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Business Disruption</span><span class="compare-stat-value" id="compareDisruption">High</span></div>
+        <div class="compare-stat"><span class="compare-stat-label">Compliance Evidence</span><span class="compare-stat-value" id="compareCompliance">None</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="roi-section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">◈ Business Outcomes · By the Numbers</div>
+        <div class="section-subtitle">Quantified value delivered through the program</div>
+      </div>
+    </div>
+    <div class="roi-breakdown" id="roiBreakdown">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ============= CISO VIEW ============= -->
+<div class="view" id="view-ciso">
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Alert Volume by Category</div>
+          <div class="chart-subtitle">DISTRIBUTION ACROSS DATA TYPES — MONTH <span class="month-num">1</span></div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="cisoCategoryChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Channel Risk Distribution</div>
+          <div class="chart-subtitle">WHERE DATA LEAKS HAPPEN</div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="cisoChannelChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="chart-card full" style="margin-bottom: 24px;">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Maturity Metrics Dashboard</div>
+        <div class="chart-subtitle">12-MONTH PROGRESSION · ALERTS, FPR, AND TRUE POSITIVES</div>
+      </div>
+    </div>
+    <div class="chart-container" style="height: 320px;"><canvas id="cisoMaturityChart"></canvas></div>
+  </div>
+
+  <div class="role-swimlane">
+    <div class="section-header">
+      <div>
+        <div class="section-title">◆ Role Activation Swimlane</div>
+        <div class="section-subtitle">Which teams are active in each phase of the program</div>
+      </div>
+    </div>
+    <div id="swimlaneContainer"></div>
+  </div>
+</div>
+
+<!-- ============= SOC ANALYST VIEW ============= -->
+<div class="view" id="view-soc">
+
+  <div class="content-tabs">
+    <button class="tab-btn active" data-tab="logs">Live Log Stream</button>
+    <button class="tab-btn" data-tab="triage">Triage Simulator</button>
+    <button class="tab-btn" data-tab="categories">Triage Categorization</button>
+  </div>
+
+  <div class="tab-content active" id="tab-logs">
+    <div class="section-header">
+      <div>
+        <div class="section-title">⊙ Sample DLP Alerts · Month <span class="month-num">1</span></div>
+        <div class="section-subtitle">Representative incidents with triage verdicts — click any card to expand</div>
+      </div>
+    </div>
+    <div class="logs-grid" id="logsGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-triage">
+    <div class="triage-panel">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⌘ Interactive Triage Simulator</div>
+          <div class="section-subtitle">Each verdict creates a tuning ticket that flows into the policy refinement pipeline</div>
+        </div>
+      </div>
+
+      <!-- FEEDBACK LOOP VISUALIZATION -->
+      <div class="feedback-loop">
+        <div class="flow-step" id="flowStep1">
+          <div class="step-label">1 · Triage</div>
+          <div class="step-value">Categorize incident</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="flowStep2">
+          <div class="step-label">2 · Ticket</div>
+          <div class="step-value">Auto-generate</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="flowStep3">
+          <div class="step-label">3 · Tune & Measure</div>
+          <div class="step-value">Apply + impact</div>
+        </div>
+      </div>
+
+      <div class="triage-incident" id="triageIncident">
+        <!-- Populated by JS -->
+      </div>
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">How would you categorize this incident?</div>
+      <div class="triage-actions">
+        <button class="triage-btn" data-verdict="tp-malicious">▲ True Positive — Malicious Intent</button>
+        <button class="triage-btn" data-verdict="tp-negligent">▲ True Positive — Negligent / Accidental</button>
+        <button class="triage-btn" data-verdict="fp-pattern">▼ False Positive — Pattern Match Error</button>
+        <button class="triage-btn" data-verdict="fp-legitimate">▼ False Positive — Legitimate Business Use</button>
+      </div>
+      <div class="triage-result" id="triageResult"></div>
+      <button class="triage-btn" id="newIncidentBtn" style="margin-top: 12px; text-align: center; background: var(--accent-cyan); color: var(--bg-primary); font-weight: 600;">→ Generate New Incident</button>
+    </div>
+
+    <!-- TICKETS GENERATED FROM YOUR TRIAGE -->
+    <div class="tickets-generated">
+      <div class="tickets-header">
+        <div>
+          <div class="section-title">⊞ Tuning Tickets Generated From Your Triage</div>
+          <div class="section-subtitle">Every triage decision creates an actionable ticket for the DLP Admin to apply</div>
+        </div>
+        <div class="tickets-counter">
+          <div class="counter-pill"><span class="counter-dot open"></span><span id="ticketCountOpen">0</span> open</div>
+          <div class="counter-pill"><span class="counter-dot resolved"></span><span id="ticketCountResolved">0</span> resolved</div>
+          <div class="counter-pill"><span class="counter-dot proposed"></span><span id="ticketCountTotal">0</span> total</div>
+        </div>
+      </div>
+
+      <!-- IMPACT METER -->
+      <div class="impact-meter" id="impactMeter" style="display: none;">
+        <div class="impact-meter-header">
+          <div class="impact-meter-title">⊕ Cumulative Impact From Your Triage Decisions</div>
+        </div>
+        <div class="impact-stats">
+          <div class="impact-stat">
+            <div class="impact-stat-value" id="impactAlertsReduced">0</div>
+            <div class="impact-stat-label">Alerts Reduced / Month</div>
+          </div>
+          <div class="impact-stat">
+            <div class="impact-stat-value" id="impactFprDelta">0.0</div>
+            <div class="impact-stat-label">FPR % Reduction</div>
+          </div>
+          <div class="impact-stat">
+            <div class="impact-stat-value" id="impactHoursSaved">0</div>
+            <div class="impact-stat-label">Analyst Hrs Saved / Wk</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-list" id="ticketList">
+        <div class="tickets-empty">
+          <span class="icon">⊞</span>
+          No tickets generated yet. Triage an incident above to see how your decisions flow into the tuning pipeline.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-categories">
+    <div class="chart-card full">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Triage Outcome Distribution</div>
+          <div class="chart-subtitle">HOW ANALYSTS CATEGORIZE INCIDENTS — MONTH <span class="month-num">1</span></div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="triageDistChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============= DLP ADMIN VIEW ============= -->
+<div class="view" id="view-admin">
+
+  <div class="tuning-timeline">
+    <div class="section-header">
+      <div>
+        <div class="section-title">⟁ Tuning Actions Timeline</div>
+        <div class="section-subtitle">All policy adjustments made through Month <span class="month-num">1</span></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="background:var(--bg-tertiary); border:1px solid var(--border); border-radius:8px; padding:8px 16px; text-align:center;">
+          <div id="timelineCount" style="font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--accent-cyan);">2</div>
+          <div style="font-size:10px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.06em;">Total Entries</div>
+        </div>
+        <div style="background:var(--bg-tertiary); border:1px solid var(--border); border-radius:8px; padding:8px 16px; text-align:center;">
+          <div id="timelineUserCount" style="font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--accent-emerald);">0</div>
+          <div style="font-size:10px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.06em;">From Triage</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-list" id="tuningTimeline">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Top Noisy Policies</div>
+          <div class="chart-subtitle">CANDIDATES FOR TUNING — MONTH <span class="month-num">1</span></div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="noisyPoliciesChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Tuning Backlog Health</div>
+          <div class="chart-subtitle">OPEN VS RESOLVED TICKETS</div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="tuningBacklogChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="insight-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="insight-card" style="border-top: 3px solid var(--accent-cyan);">
+      <div class="insight-icon">⚙</div>
+      <div class="insight-title" style="font-size:13px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; font-family:'JetBrains Mono',monospace; margin-bottom:8px;">Enforcement Mode</div>
+      <div id="adminMode" style="font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--accent-cyan);">Monitor Only</div>
+      <div id="adminModeDesc" style="font-size:11px; color:var(--text-muted); margin-top:6px; font-family:'JetBrains Mono',monospace;">No blocking active</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">◈</div>
+      <div class="insight-title">This Month's Focus</div>
+      <div class="insight-text" id="adminFocus">Discover baseline data flows. All policies in monitor-only mode. No blocking enabled.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">⊕</div>
+      <div class="insight-title">Active Stakeholders</div>
+      <div class="insight-text" id="adminStakeholders">DLP Administrator leading deployment. SOC team reviewing initial alert patterns.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">⟶</div>
+      <div class="insight-title">Next Month's Goals</div>
+      <div class="insight-text" id="adminNextGoals">Catalog top 20 legitimate workflows. Identify whitelist candidates from initial noise.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ENTERPRISE TICKET MODAL -->
+<div class="ticket-modal-overlay" id="ticketModalOverlay">
+  <div class="ticket-modal" id="ticketModal">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<script>
+// ============= DATA MODEL =============
+const monthlyData = {
+  1: { phase: 1, alerts: 8500, fpr: 87, threats: 2, roi: 0.8, mode: 'Monitor Only', headline: 'We have visibility into our data flows for the first time', subhead: 'Initial DLP deployment reveals the true picture of how sensitive data moves across our organization. The next 11 months will transform this visibility into measurable risk reduction.', focus: 'Discover baseline data flows. All policies in monitor-only mode. Document every workflow before tuning.', stakeholders: 'DLP Administrator leading deployment. SOC team conducting initial pattern analysis.', nextGoals: 'Catalog top 20 legitimate workflows. Identify whitelist candidates from noise patterns.', risk: 0, hours: 160, disruption: 'High', compliance: 'None', complianceScore: 42, auditReady: 'No' },
+  2: { phase: 1, alerts: 8200, fpr: 82, threats: 4, roi: 1.6, mode: 'Monitor Only', headline: 'Patterns emerge as we map our data landscape', subhead: 'After two months of observation, we can now identify which departments, channels, and workflows generate the most activity. Tuning targets are becoming clear.', focus: 'Top 20 workflows catalogued. Department liaisons engaged. First whitelist candidates identified.', stakeholders: 'DLP Admin + Department Liaisons (Finance, HR, Engineering, Marketing).', nextGoals: 'Begin first tuning wave. Refine 8 noisiest regex patterns. Add context filters.', risk: 4, hours: 158, disruption: 'High', compliance: 'Initial', complianceScore: 48, auditReady: 'No' },
+  3: { phase: 1, alerts: 6500, fpr: 65, threats: 7, roi: 2.8, mode: 'Monitor Only', headline: 'First tuning wave cuts noise by 24%', subhead: 'Targeted regex refinement and context filters dramatically reduce false alerts without sacrificing detection. Real threats are becoming visible above the noise floor.', focus: 'Refined 8 regex patterns. Added sender/recipient context filters. Whitelisted 15 known-good destinations.', stakeholders: 'DLP Admin + Compliance Officer + SOC L2 Lead.', nextGoals: 'Move top 5 high-confidence policies to selective enforcement (block) mode.', risk: 24, hours: 130, disruption: 'Medium-High', compliance: 'Documented', complianceScore: 55, auditReady: 'Partial' },
+  4: { phase: 2, alerts: 5800, fpr: 48, threats: 12, roi: 4.5, mode: 'Selective Block', headline: 'First real exfiltration attempt blocked', subhead: 'A departing engineer was prevented from uploading proprietary source code to a personal cloud account. The DLP investment has now demonstrably paid for itself.', focus: 'Top 5 high-confidence policies in BLOCK mode. First HR coaching cases initiated. Coaching pop-ups deployed.', stakeholders: 'SOC + DLP Admin + HR Partner (first repeat-offender cases).', nextGoals: 'Roll out user education layer. Begin contextual just-in-time training pop-ups.', risk: 45, hours: 100, disruption: 'Medium', compliance: 'Documented', complianceScore: 64, auditReady: 'Partial' },
+  5: { phase: 2, alerts: 4900, fpr: 38, threats: 18, roi: 7.2, mode: 'Selective Block', headline: 'Users self-correct after just-in-time coaching', subhead: 'Behavioral coaching at the moment of violation reduces repeat offenses by 60%. Most users are not malicious — they simply did not know better. Now they do.', focus: 'JIT coaching pop-ups live. First repeat-offender training cohort completed. Behavior change measurable.', stakeholders: 'Security Awareness Team + DLP Admin + Department Managers.', nextGoals: 'Mid-point maturity review. Quarterly executive report. Layer in UEBA.', risk: 60, hours: 80, disruption: 'Low-Medium', compliance: 'Maturing', complianceScore: 71, auditReady: 'Partial' },
+  6: { phase: 2, alerts: 4200, fpr: 22, threats: 25, roi: 12, mode: 'Selective Block', headline: 'Halfway home — false positives down 75%', subhead: 'Six months in, we have cut alert noise by three-quarters while catching more real threats than ever. The program is on track to hit its 12-month maturity targets.', focus: 'Quarterly policy review complete. Executive metrics report delivered. UEBA correlation enabled.', stakeholders: 'CISO review + all teams + first executive briefing.', nextGoals: 'Insider risk layer activation. Risk-scoring users based on cumulative behavior.', risk: 75, hours: 60, disruption: 'Low', compliance: 'Maturing', complianceScore: 78, auditReady: 'Yes (Partial Scope)' },
+  7: { phase: 3, alerts: 3800, fpr: 18, threats: 34, roi: 18, mode: 'Broad Block + UEBA', headline: 'Insider risk detection catches resignation-correlated threat', subhead: 'A user with a resignation flag in HR was detected exfiltrating data via three channels simultaneously. UEBA correlation across DLP, identity, and HR systems made the catch possible.', focus: 'UEBA risk-scoring active. Cross-system correlation with HR and identity systems live.', stakeholders: 'DLP Admin + Insider Threat Team + HR + Legal.', nextGoals: 'Process improvement initiatives. Fix broken workflows that drive risky behavior.', risk: 82, hours: 50, disruption: 'Low', compliance: 'Strong', complianceScore: 84, auditReady: 'Yes' },
+  8: { phase: 3, alerts: 3400, fpr: 14, threats: 42, roi: 25, mode: 'Broad Block + UEBA', headline: 'Fixing broken processes eliminates 800 monthly alerts', subhead: 'Root cause analysis revealed users were emailing sensitive files because the secure file-share tool was unusable. IT fixed it. The fix removed 800 monthly false alerts overnight.', focus: 'Process improvement program launched. Business workflow validation in progress.', stakeholders: 'DLP Admin + Business Process Owners + IT Operations.', nextGoals: 'Move to broad enforcement (80% of policies in BLOCK mode).', risk: 87, hours: 42, disruption: 'Very Low', compliance: 'Strong', complianceScore: 88, auditReady: 'Yes' },
+  9: { phase: 3, alerts: 2900, fpr: 9, threats: 51, roi: 33, mode: 'Broad Block', headline: 'Broad enforcement live — false positives below 10%', subhead: 'Eight out of ten policies are now in active enforcement. The DLP system blocks bad actions in real time without disrupting legitimate work. The team is proud of what we have built.', focus: '80% of policies in active BLOCK enforcement. SOC fully operational. DLP Admin in optimization mode.', stakeholders: 'SOC fully operational. DLP Admin focused on optimization and edge cases.', nextGoals: 'SOAR integration. Automated playbooks for the most common incident types.', risk: 90, hours: 35, disruption: 'Very Low', compliance: 'Strong', complianceScore: 92, auditReady: 'Yes' },
+  10: { phase: 4, alerts: 2500, fpr: 7, threats: 58, roi: 42, mode: 'Broad Block + SOAR', headline: 'Automation handles 70% of incidents without human touch', subhead: 'SOAR playbooks now triage, escalate, and remediate the majority of routine DLP incidents automatically. Analysts focus only on the most complex and high-risk cases.', focus: 'SOAR integration complete. Automated playbooks for top 10 incident types live.', stakeholders: 'SOC Engineering + DLP Admin + SOAR Platform Team.', nextGoals: 'External compliance audit preparation. Evidence package generation.', risk: 92, hours: 28, disruption: 'Negligible', compliance: 'Excellent', complianceScore: 95, auditReady: 'Yes' },
+  11: { phase: 4, alerts: 2200, fpr: 6, threats: 64, roi: 52, mode: 'Mature Operation', headline: 'External audit passed with zero findings', subhead: 'Independent compliance audit validates our DLP program against DPDP Act, GDPR, PCI-DSS, and HIPAA. Zero material findings. The board has its assurance.', focus: 'Compliance validation complete. Audit evidence package delivered. Zero material findings.', stakeholders: 'Compliance + Legal + CISO + External Auditors.', nextGoals: 'Final maturity push. Achieve sub-5% FPR. Document program for ongoing operation.', risk: 94, hours: 25, disruption: 'Negligible', compliance: 'Excellent', complianceScore: 97, auditReady: 'Yes' },
+  12: { phase: 4, alerts: 1900, fpr: 4, threats: 71, roi: 65, mode: 'Mature Operation', headline: 'Goal achieved · Sub-5% false positives, 95% risk reduction', subhead: 'The 12-month DLP maturity program has delivered every commitment made to the board. We have prevented an estimated ₹65 crore in breach costs, achieved audit-ready status, and built a security culture our employees actually trust.', focus: 'Steady-state operations. Continuous tuning cadence established. Quarterly review process locked in.', stakeholders: 'All teams in steady-state. Quarterly maturity reviews driven by CISO office.', nextGoals: 'Year 2: Expand DLP to GenAI tools. Insider risk program expansion. Vendor data flow monitoring.', risk: 95, hours: 22, disruption: 'Negligible', compliance: 'Excellent', complianceScore: 98, auditReady: 'Yes' }
+};
+
+// Tuning actions log (cumulative)
+const tuningActions = [
+  { month: 1, role: 'DLP Admin', title: 'Initial deployment in Monitor-Only mode', description: 'All 47 default policies deployed without blocking. Goal: capture baseline of all data movement.', impact: 'Baseline established: 8,500 alerts captured' },
+  { month: 1, role: 'SOC L2', title: 'First triage categorization framework', description: 'Created 6-category triage taxonomy: TP-Malicious, TP-Negligent, FP-Pattern, FP-Legitimate, FP-Test, Policy Mismatch.', impact: 'Triage consistency across analyst team' },
+  { month: 2, role: 'DLP Admin + Liaisons', title: 'Top 20 legitimate workflows catalogued', description: 'Worked with department heads to document approved data flows. Identified 15 destinations for whitelisting.', impact: 'Foundation for context-aware policies' },
+  { month: 2, role: 'Compliance', title: 'Mapped policies to regulatory requirements', description: 'Each DLP policy now linked to specific DPDP/GDPR/PCI/HIPAA control objectives.', impact: 'Compliance traceability established' },
+  { month: 3, role: 'DLP Admin', title: 'SSN regex tightened — required word boundaries', description: 'Old pattern \\d{3}-\\d{2}-\\d{4} matched product SKUs. New pattern requires word boundaries and dash separators.', impact: '−1,200 monthly false positives' },
+  { month: 3, role: 'DLP Admin', title: 'Credit card detection enhanced with Luhn check', description: 'Added Luhn algorithm validation to PCI policy. Eliminates random 16-digit number false matches.', impact: '−800 monthly false positives' },
+  { month: 3, role: 'DLP Admin', title: 'Whitelisted 15 known-good destinations', description: 'Approved partner domains, internal SaaS tools, and validated vendor portals added to whitelist.', impact: '−700 monthly false positives' },
+  { month: 4, role: 'DLP Admin + CISO', title: 'Top 5 policies moved to BLOCK mode', description: 'High-confidence policies (PII to public cloud, source code exfiltration, PHI to USB) now actively blocking.', impact: 'First real exfiltration attempt blocked: source code to personal Dropbox' },
+  { month: 4, role: 'HR Partner', title: 'Repeat-offender escalation process formalized', description: '3-strike framework: coaching → manager notification → HR involvement. Documented and approved by Legal.', impact: 'Defensible disciplinary framework' },
+  { month: 5, role: 'Security Awareness', title: 'Just-in-time coaching pop-ups deployed', description: 'When user attempts a borderline action, contextual education appears explaining policy and alternatives.', impact: '60% of users self-correct after first coaching' },
+  { month: 5, role: 'DLP Admin', title: 'Marketing department workflow exception', description: 'Approved bulk customer email pattern for verified marketing campaigns. Eliminates 340 monthly false alerts.', impact: '−340 monthly false positives' },
+  { month: 6, role: 'CISO + DLP Admin', title: 'First quarterly policy review', description: 'Comprehensive review of all 47 policies. 12 retired, 8 modified, 3 new policies added based on emerging risks.', impact: 'Policy portfolio rationalized' },
+  { month: 6, role: 'DLP Admin', title: 'UEBA correlation enabled', description: 'DLP alerts now enriched with user behavior baselines. Risk scores computed per user.', impact: 'Behavioral anomalies surfaced' },
+  { month: 7, role: 'Insider Threat Team', title: 'HR + DLP integration live', description: 'Users with resignation flags, performance issues, or access changes get elevated DLP scrutiny.', impact: 'First insider threat caught: departing employee, 3-channel exfiltration' },
+  { month: 7, role: 'DLP Admin', title: 'Print policy contextualized', description: 'Print monitoring now considers document classification, page count, and time-of-day patterns.', impact: '−400 monthly false positives' },
+  { month: 8, role: 'IT Operations', title: 'Fixed broken secure file-share tool', description: 'Root cause analysis revealed users emailed sensitive files because the secure tool was unusable. IT fixed it.', impact: '−800 monthly false positives. Process improvement win.' },
+  { month: 8, role: 'Business Process Owner', title: 'Finance reconciliation workflow approved', description: 'Daily PCI data reconciliation between Finance and processor formally approved with audit logging.', impact: '−600 monthly false positives' },
+  { month: 9, role: 'DLP Admin', title: '80% of policies moved to BLOCK enforcement', description: 'Comprehensive review confirmed enforcement-ready. Remaining 20% kept in alert mode for edge cases.', impact: 'Broad enforcement achieved without business disruption' },
+  { month: 10, role: 'SOC Engineering', title: 'SOAR playbooks for top 10 incident types', description: 'Automated triage, enrichment, and remediation for routine incidents. Analysts now focus on complex cases.', impact: '70% of incidents handled without human touch' },
+  { month: 11, role: 'Compliance + Legal', title: 'External audit completed — zero findings', description: 'Independent auditors validated DLP program against DPDP, GDPR, PCI-DSS, and HIPAA requirements.', impact: 'Audit-ready posture confirmed' },
+  { month: 12, role: 'CISO', title: 'Steady-state operations established', description: 'Quarterly tuning cadence locked in. Continuous improvement framework operational. Year 2 roadmap approved.', impact: 'Sustainable program achieved' }
+];
+
+// Sample log generators per month
+const logCategories = ['PII', 'PCI', 'PHI', 'Intellectual Property', 'Confidential Business'];
+const sampleLogTemplates = {
+  PII: [
+    { policy: 'PII_Aadhaar_Detection', file: 'employee_records.xlsx', dataType: 'Aadhaar Number', channel: 'SMTP', dest: 'gmail.com' },
+    { policy: 'PII_PAN_Detection', file: 'vendor_kyc.pdf', dataType: 'PAN Number', channel: 'HTTPS', dest: 'wetransfer.com' },
+    { policy: 'PII_SSN_Detection', file: 'us_payroll.csv', dataType: 'US SSN', channel: 'USB', dest: 'External Drive' }
+  ],
+  PCI: [
+    { policy: 'PCI_DSS_Compliance', file: 'transactions_q1.csv', dataType: 'Credit Card Number', channel: 'HTTPS', dest: 'dropbox.com' },
+    { policy: 'PCI_Card_Storage', file: 'merchant_data.xlsx', dataType: 'PAN + CVV Combo', channel: 'SMTP', dest: 'yahoo.com' }
+  ],
+  PHI: [
+    { policy: 'HIPAA_Medical_Records', file: 'patient_april.pdf', dataType: 'PHI + MRN', channel: 'USB', dest: 'Kingston DT' },
+    { policy: 'HIPAA_Diagnosis_Codes', file: 'discharge_summary.docx', dataType: 'ICD-10 + PII', channel: 'Print', dest: 'Floor 3 Printer' }
+  ],
+  'Intellectual Property': [
+    { policy: 'IP_Source_Code', file: 'core_engine_v3.zip', dataType: 'Proprietary Source Code', channel: 'HTTPS', dest: 'github.com (personal)' },
+    { policy: 'IP_Design_Documents', file: 'product_roadmap.pptx', dataType: 'Strategic Plans', channel: 'SMTP', dest: 'competitor.com' }
+  ],
+  'Confidential Business': [
+    { policy: 'Confidential_Financial', file: 'Q1_earnings_DRAFT.docx', dataType: 'Pre-release Financials', channel: 'Print', dest: 'Conference 3F' },
+    { policy: 'Confidential_Legal', file: 'merger_terms.pdf', dataType: 'M&A Documents', channel: 'HTTPS', dest: 'box.com' }
+  ]
+};
+
+const sampleUsers = [
+  { name: 'rajesh.kumar', dept: 'Engineering', risk: 'medium' },
+  { name: 'priya.sharma', dept: 'Marketing', risk: 'low' },
+  { name: 'arjun.mehta', dept: 'Finance', risk: 'low' },
+  { name: 'sneha.patel', dept: 'HR', risk: 'low' },
+  { name: 'vikram.singh', dept: 'Sales', risk: 'medium' },
+  { name: 'ananya.reddy', dept: 'Legal', risk: 'low' },
+  { name: 'rohan.gupta', dept: 'Engineering', risk: 'high' },
+  { name: 'maya.iyer', dept: 'Healthcare Ops', risk: 'medium' },
+  { name: 'karthik.nair', dept: 'Executive', risk: 'medium' },
+  { name: 'divya.joshi', dept: 'Customer Support', risk: 'low' }
+];
+
+// ============= DETERMINISTIC LOG DEFINITIONS PER MONTH =============
+// Each month has exactly 8 fixed logs so the screen always matches documentation.
+// verdict: 'fp' = false positive, 'tp' = true positive
+// Month 1: 87% FPR → 7 FP, 1 TP
+// Month 3: 65% FPR → 5 FP, 3 TP
+// Month 4: 48% FPR → 4 FP, 4 TP
+// Month 6: 22% FPR → 2 FP, 6 TP
+// Month 12: 4% FPR → 0 FP, 8 TP (all TP)
+
+const fixedLogs = {
+  1: [
+    { id:'INC-2026-01-1001', severity:'High',     category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1002', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'priya.sharma',   dept:'Marketing',      risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1003', severity:'Medium',   category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1004', severity:'Medium',   category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1005', severity:'Low',      category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1006', severity:'Medium',   category:'PCI',                   policy:'PCI_Card_Storage',        file:'merchant_data.xlsx',      dataType:'PAN + CVV Combo',         channel:'SMTP',  dest:'yahoo.com',             user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1007', severity:'Low',      category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-01-1008', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Audited'  },
+  ],
+  2: [
+    { id:'INC-2026-02-1001', severity:'High',     category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'priya.sharma',   dept:'Marketing',      risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-02-1002', severity:'Medium',   category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-02-1003', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Audited'  },
+    { id:'INC-2026-02-1004', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-02-1005', severity:'Low',      category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-02-1006', severity:'Medium',   category:'PII',                   policy:'PII_SSN_Detection',       file:'us_payroll.csv',          dataType:'US SSN',                  channel:'USB',   dest:'External Drive',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-02-1007', severity:'Low',      category:'PCI',                   policy:'PCI_Card_Storage',        file:'merchant_data.xlsx',      dataType:'PAN + CVV Combo',         channel:'SMTP',  dest:'yahoo.com',             user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-02-1008', severity:'High',     category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Audited'  },
+  ],
+  3: [
+    { id:'INC-2026-03-1001', severity:'High',     category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'priya.sharma',   dept:'Marketing',      risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-03-1002', severity:'Medium',   category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-03-1003', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Audited'  },
+    { id:'INC-2026-03-1004', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Audited'  },
+    { id:'INC-2026-03-1005', severity:'Low',      category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-03-1006', severity:'Medium',   category:'PII',                   policy:'PII_SSN_Detection',       file:'us_payroll.csv',          dataType:'US SSN',                  channel:'USB',   dest:'External Drive',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-03-1007', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Audited'  },
+    { id:'INC-2026-03-1008', severity:'Low',      category:'PCI',                   policy:'PCI_Card_Storage',        file:'merchant_data.xlsx',      dataType:'PAN + CVV Combo',         channel:'SMTP',  dest:'yahoo.com',             user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'fp', action:'Audited'  },
+  ],
+  4: [
+    { id:'INC-2026-04-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-04-1002', severity:'High',     category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'priya.sharma',   dept:'Marketing',      risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-04-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-04-1004', severity:'Medium',   category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-04-1005', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-04-1006', severity:'Low',      category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-04-1007', severity:'Medium',   category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'fp', action:'Audited'  },
+    { id:'INC-2026-04-1008', severity:'Low',      category:'PCI',                   policy:'PCI_Card_Storage',        file:'merchant_data.xlsx',      dataType:'PAN + CVV Combo',         channel:'SMTP',  dest:'yahoo.com',             user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'fp', action:'Audited'  },
+  ],
+  5: [
+    { id:'INC-2026-05-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-05-1002', severity:'High',     category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-05-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-05-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-05-1005', severity:'Medium',   category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Notified' },
+    { id:'INC-2026-05-1006', severity:'Medium',   category:'PII',                   policy:'PII_SSN_Detection',       file:'us_payroll.csv',          dataType:'US SSN',                  channel:'USB',   dest:'External Drive',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-05-1007', severity:'Low',      category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'fp', action:'Notified' },
+    { id:'INC-2026-05-1008', severity:'Low',      category:'PCI',                   policy:'PCI_Card_Storage',        file:'merchant_data.xlsx',      dataType:'PAN + CVV Combo',         channel:'SMTP',  dest:'yahoo.com',             user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'fp', action:'Notified' },
+  ],
+  6: [
+    { id:'INC-2026-06-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-06-1002', severity:'High',     category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-06-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-06-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-06-1005', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-06-1006', severity:'Medium',   category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-06-1007', severity:'Medium',   category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Notified' },
+    { id:'INC-2026-06-1008', severity:'Low',      category:'PCI',                   policy:'PCI_Card_Storage',        file:'merchant_data.xlsx',      dataType:'PAN + CVV Combo',         channel:'SMTP',  dest:'yahoo.com',             user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'fp', action:'Notified' },
+  ],
+  7: [
+    { id:'INC-2026-07-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1002', severity:'Critical', category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1005', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1006', severity:'High',     category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1007', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-07-1008', severity:'Low',      category:'PCI',                   policy:'PCI_DSS_Compliance',      file:'transactions_q1.csv',     dataType:'Credit Card Number',      channel:'HTTPS', dest:'dropbox.com',           user:{name:'arjun.mehta',    dept:'Finance',        risk:'low'},    verdict:'fp', action:'Notified' },
+  ],
+  8: [
+    { id:'INC-2026-08-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1002', severity:'Critical', category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1005', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1006', severity:'High',     category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1007', severity:'Medium',   category:'PII',                   policy:'PII_SSN_Detection',       file:'us_payroll.csv',          dataType:'US SSN',                  channel:'USB',   dest:'External Drive',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-08-1008', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'tp', action:'Blocked'  },
+  ],
+  9: [
+    { id:'INC-2026-09-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1002', severity:'Critical', category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1005', severity:'High',     category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1006', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1007', severity:'Medium',   category:'PII',                   policy:'PII_SSN_Detection',       file:'us_payroll.csv',          dataType:'US SSN',                  channel:'USB',   dest:'External Drive',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-09-1008', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'tp', action:'Blocked'  },
+  ],
+  10: [
+    { id:'INC-2026-10-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1002', severity:'Critical', category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1005', severity:'High',     category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1006', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1007', severity:'Medium',   category:'PII',                   policy:'PII_SSN_Detection',       file:'us_payroll.csv',          dataType:'US SSN',                  channel:'USB',   dest:'External Drive',        user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-10-1008', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'tp', action:'Blocked'  },
+  ],
+  11: [
+    { id:'INC-2026-11-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1002', severity:'Critical', category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1005', severity:'High',     category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1006', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1007', severity:'Medium',   category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-11-1008', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'tp', action:'Blocked'  },
+  ],
+  12: [
+    { id:'INC-2026-12-1001', severity:'Critical', category:'Intellectual Property', policy:'IP_Source_Code',          file:'core_engine_v3.zip',      dataType:'Proprietary Source Code', channel:'HTTPS', dest:'github.com (personal)', user:{name:'rohan.gupta',    dept:'Engineering',    risk:'high'},   verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1002', severity:'Critical', category:'PII',                   policy:'PII_Aadhaar_Detection',   file:'employee_records.xlsx',   dataType:'Aadhaar Number',          channel:'SMTP',  dest:'gmail.com',             user:{name:'rajesh.kumar',   dept:'Engineering',    risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1003', severity:'High',     category:'PHI',                   policy:'HIPAA_Medical_Records',   file:'patient_april.pdf',       dataType:'PHI + MRN',               channel:'USB',   dest:'Kingston DT',           user:{name:'maya.iyer',      dept:'Healthcare Ops', risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1004', severity:'High',     category:'Intellectual Property', policy:'IP_Design_Documents',     file:'product_roadmap.pptx',    dataType:'Strategic Plans',         channel:'SMTP',  dest:'competitor.com',        user:{name:'vikram.singh',   dept:'Sales',          risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1005', severity:'High',     category:'Confidential Business', policy:'Confidential_Legal',      file:'merger_terms.pdf',        dataType:'M&A Documents',           channel:'HTTPS', dest:'box.com',               user:{name:'karthik.nair',   dept:'Executive',      risk:'medium'}, verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1006', severity:'High',     category:'PII',                   policy:'PII_PAN_Detection',       file:'vendor_kyc.pdf',          dataType:'PAN Number',              channel:'HTTPS', dest:'wetransfer.com',        user:{name:'ananya.reddy',   dept:'Legal',          risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1007', severity:'Medium',   category:'Confidential Business', policy:'Confidential_Financial',  file:'Q1_earnings_DRAFT.docx',  dataType:'Pre-release Financials',  channel:'Print', dest:'Conference 3F',         user:{name:'sneha.patel',    dept:'HR',             risk:'low'},    verdict:'tp', action:'Blocked'  },
+    { id:'INC-2026-12-1008', severity:'Medium',   category:'PHI',                   policy:'HIPAA_Diagnosis_Codes',   file:'discharge_summary.docx',  dataType:'ICD-10 + PII',            channel:'Print', dest:'Floor 3 Printer',       user:{name:'divya.joshi',    dept:'Customer Support',risk:'low'}, verdict:'tp', action:'Blocked'  },
+  ]
+};
+
+function generateLogsForMonth(month) {
+  // Return fixed deterministic logs — same every time for every month.
+  // This ensures the CEO briefing document always matches what is on screen.
+  const logs = fixedLogs[month] || fixedLogs[12];
+  return logs.map(log => ({ ...log, blocked: log.action === 'Blocked' }));
+}
+
+// ============= APP STATE =============
+let currentMonth = 1;
+let currentView = 'ceo';
+let currentTab = 'logs';
+let charts = {};
+
+// ============= INIT =============
+document.addEventListener('DOMContentLoaded', () => {
+  initMonthMarkers();
+  initEventListeners();
+  initCharts();
+  initSwimlane();
+  updateAll();
+});
+
+function initMonthMarkers() {
+  const container = document.getElementById('monthMarkers');
+  for (let i = 1; i <= 12; i++) {
+    const marker = document.createElement('div');
+    marker.className = 'month-marker' + (i === 1 ? ' active' : '');
+    marker.textContent = 'M' + i;
+    marker.dataset.month = i;
+    marker.addEventListener('click', () => {
+      document.getElementById('monthSlider').value = i;
+      currentMonth = i;
+      updateAll();
+    });
+    container.appendChild(marker);
+  }
+}
+
+function initEventListeners() {
+  document.getElementById('monthSlider').addEventListener('input', (e) => {
+    currentMonth = parseInt(e.target.value);
+    updateAll();
+  });
+
+  document.querySelectorAll('.role-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentView = btn.dataset.view;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + currentView).classList.add('active');
+      updateAll();
+    });
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + currentTab).classList.add('active');
+      if (currentTab === 'triage') generateNewTriageIncident();
+      if (currentTab === 'categories') updateTriageDistChart();
+    });
+  });
+
+  document.querySelectorAll('.triage-btn[data-verdict]').forEach(btn => {
+    btn.addEventListener('click', () => handleTriageVerdict(btn.dataset.verdict));
+  });
+
+  document.getElementById('newIncidentBtn').addEventListener('click', generateNewTriageIncident);
+
+  // Modal: ESC key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeTicketModal();
+  });
+  // Modal: click outside to close
+  document.getElementById('ticketModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'ticketModalOverlay') closeTicketModal();
+  });
+}
+
+function updateAll() {
+  const data = monthlyData[currentMonth];
+
+  // Slider
+  document.getElementById('sliderProgress').style.width = (currentMonth / 12 * 100) + '%';
+  document.getElementById('monthNumber').textContent = currentMonth;
+  const phaseNames = { 1: 'Phase 1 · Discovery', 2: 'Phase 2 · Tuning', 3: 'Phase 3 · Enforcement', 4: 'Phase 4 · Maturity' };
+  document.getElementById('monthPhase').textContent = phaseNames[data.phase];
+
+  // Update phase labels
+  document.querySelectorAll('.phase-label').forEach(label => {
+    label.classList.toggle('active', parseInt(label.dataset.phase) === data.phase);
+  });
+
+  // Update month markers
+  document.querySelectorAll('.month-marker').forEach(m => {
+    m.classList.toggle('active', parseInt(m.dataset.month) === currentMonth);
+  });
+
+  // Update month-num placeholders
+  document.querySelectorAll('.month-num').forEach(el => el.textContent = currentMonth);
+
+  // KPIs
+  document.getElementById('kpiAlerts').textContent = data.alerts.toLocaleString();
+  document.getElementById('kpiFPR').textContent = data.fpr + '%';
+  document.getElementById('kpiThreats').textContent = data.threats;
+  document.getElementById('kpiROI').textContent = '₹' + data.roi.toFixed(1) + ' Cr';
+
+  // KPI trends
+  if (currentMonth > 1) {
+    const prev = monthlyData[currentMonth - 1];
+    const alertChange = ((data.alerts - prev.alerts) / prev.alerts * 100).toFixed(1);
+    const fprChange = (data.fpr - prev.fpr).toFixed(1);
+    document.getElementById('kpiAlertsTrend').innerHTML = (alertChange < 0 ? '↓ ' : '↑ ') + Math.abs(alertChange) + '% vs M' + (currentMonth - 1);
+    document.getElementById('kpiAlertsTrend').className = 'kpi-trend ' + (alertChange < 0 ? 'positive' : 'negative');
+    document.getElementById('kpiFPRTrend').innerHTML = (fprChange < 0 ? '↓ ' : '↑ ') + Math.abs(fprChange) + ' pts · Goal: <5%';
+    document.getElementById('kpiFPRTrend').className = 'kpi-trend ' + (fprChange < 0 ? 'positive' : 'negative');
+  }
+
+  // CEO View
+  document.getElementById('ceoMonthLabel').textContent = currentMonth;
+  document.getElementById('ceoHeadline').textContent = data.headline;
+  document.getElementById('ceoSubhead').textContent = data.subhead;
+  document.getElementById('execRiskReduction').textContent = data.risk + '%';
+  document.getElementById('execIncidentsPrevented').textContent = data.threats;
+  document.getElementById('execComplianceScore').textContent = data.complianceScore + '%';
+  document.getElementById('execAuditReady').textContent = data.auditReady;
+
+  // Compare side
+  document.getElementById('compareAlerts').textContent = data.alerts.toLocaleString();
+  document.getElementById('compareFPR').textContent = data.fpr + '%';
+  document.getElementById('compareHours').textContent = data.hours + ' hrs';
+  document.getElementById('compareThreats').textContent = (data.threats / currentMonth).toFixed(1) + ' / month';
+  document.getElementById('compareDisruption').textContent = data.disruption;
+  document.getElementById('compareCompliance').textContent = data.compliance;
+
+  // ROI Breakdown
+  updateRoiBreakdown(data);
+
+  // Admin View
+  document.getElementById('adminFocus').textContent = data.focus;
+  document.getElementById('adminStakeholders').textContent = data.stakeholders;
+  document.getElementById('adminNextGoals').textContent = data.nextGoals;
+
+  // Enforcement Mode card
+  const modeDescriptions = {
+    'Monitor Only':        'All 47 policies in observe mode — nothing blocked',
+    'Selective Block':     'Top 5 high-confidence policies actively blocking',
+    'Broad Block + UEBA':  '80%+ policies blocking · Behavioral analytics active',
+    'Broad Block':         '80% of policies in active enforcement',
+    'Broad Block + SOAR':  'Full enforcement · SOAR automation handling routine cases',
+    'Mature Operation':    'Steady-state · Continuous tuning · Audit-ready'
+  };
+  const modeColors = {
+    'Monitor Only':        'var(--accent-cyan)',
+    'Selective Block':     'var(--accent-amber)',
+    'Broad Block + UEBA':  'var(--accent-rose)',
+    'Broad Block':         'var(--accent-rose)',
+    'Broad Block + SOAR':  'var(--accent-violet)',
+    'Mature Operation':    'var(--accent-emerald)'
+  };
+  const modeEl = document.getElementById('adminMode');
+  const modeDescEl = document.getElementById('adminModeDesc');
+  if (modeEl) {
+    modeEl.textContent = data.mode;
+    modeEl.style.color = modeColors[data.mode] || 'var(--accent-cyan)';
+    modeDescEl.textContent = modeDescriptions[data.mode] || '';
+  }
+
+  // Update charts
+  updateCharts();
+
+  // Update tuning timeline
+  updateTuningTimeline();
+
+  // Update logs
+  if (currentView === 'soc') updateLogs();
+
+  // Swimlane
+  updateSwimlane();
+}
+
+function updateRoiBreakdown(data) {
+  const breakdown = [
+    { label: 'Breach Cost Avoidance', value: '₹' + data.roi.toFixed(1) + ' Cr', detail: 'IBM avg breach cost: ₹17.9 Cr in India' },
+    { label: 'Regulatory Fine Avoidance', value: '₹' + (data.roi * 0.4).toFixed(1) + ' Cr', detail: 'DPDP Act penalty potential: up to ₹250 Cr' },
+    { label: 'Cyber Insurance Savings', value: (data.complianceScore * 0.25).toFixed(0) + '%', detail: 'Premium reduction with mature DLP' },
+    { label: 'Analyst Productivity Gain', value: ((160 - data.hours) / 160 * 100).toFixed(0) + '%', detail: 'Hours/week reduced from 160 to ' + data.hours },
+    { label: 'IP Protection Value', value: '₹' + (data.threats * 0.8).toFixed(1) + ' Cr', detail: 'Estimated value of prevented IP loss' },
+    { label: 'Brand Trust Score', value: '+' + (data.complianceScore - 42) + ' pts', detail: 'Customer trust signal improvement' }
+  ];
+  const container = document.getElementById('roiBreakdown');
+  container.innerHTML = breakdown.map(item => `
+    <div class="roi-item">
+      <div class="roi-item-label">${item.label}</div>
+      <div class="roi-item-value">${item.value}</div>
+      <div class="roi-item-detail">${item.detail}</div>
+    </div>
+  `).join('');
+}
+
+// ============= CHARTS =============
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = "'Inter Tight', sans-serif";
+Chart.defaults.borderColor = '#243049';
+
+function initCharts() {
+  // Executive FPR Chart
+  const months = Array.from({length: 12}, (_, i) => 'M' + (i + 1));
+  const fprData = months.map((_, i) => monthlyData[i+1].fpr);
+  const goalData = months.map(() => 5);
+
+  charts.execFpr = new Chart(document.getElementById('execFprChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: 'False Positive Rate',
+          data: fprData,
+          borderColor: '#06b6d4',
+          backgroundColor: 'rgba(6, 182, 212, 0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 5,
+          pointBackgroundColor: '#06b6d4',
+          pointBorderColor: '#0a0e1a',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Goal: <5%',
+          data: goalData,
+          borderColor: '#10b981',
+          borderDash: [6, 4],
+          fill: false,
+          pointRadius: 0,
+          borderWidth: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', align: 'end' } },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#243049' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Executive ROI Chart
+  const roiData = months.map((_, i) => monthlyData[i+1].roi);
+  charts.execRoi = new Chart(document.getElementById('execRoiChart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Cumulative ROI (₹ Cr)',
+        data: roiData,
+        backgroundColor: roiData.map((_, i) => i === currentMonth - 1 ? '#10b981' : 'rgba(16, 185, 129, 0.3)'),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '₹' + v + 'Cr' }, grid: { color: '#243049' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // CISO Category Chart
+  charts.cisoCategory = new Chart(document.getElementById('cisoCategoryChart'), {
+    type: 'doughnut',
+    data: {
+      labels: logCategories,
+      datasets: [{
+        data: getCategoryDistribution(currentMonth),
+        backgroundColor: ['#06b6d4', '#f59e0b', '#10b981', '#8b5cf6', '#f43f5e'],
+        borderColor: '#0a0e1a',
+        borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right' } }
+    }
+  });
+
+  // CISO Channel Chart
+  charts.cisoChannel = new Chart(document.getElementById('cisoChannelChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Email', 'Cloud Upload', 'USB', 'Print', 'Web'],
+      datasets: [{
+        data: getChannelDistribution(currentMonth),
+        backgroundColor: '#06b6d4',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#243049' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // CISO Maturity Chart
+  charts.cisoMaturity = new Chart(document.getElementById('cisoMaturityChart'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Total Alerts', data: months.map((_, i) => monthlyData[i+1].alerts), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4, yAxisID: 'y' },
+        { label: 'False Positive %', data: fprData, borderColor: '#f43f5e', borderWidth: 2, fill: false, tension: 0.4, yAxisID: 'y1' },
+        { label: 'True Threats Caught', data: months.map((_, i) => monthlyData[i+1].threats), borderColor: '#10b981', borderWidth: 2, fill: false, tension: 0.4, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { type: 'linear', position: 'left', grid: { color: '#243049' }, title: { display: true, text: 'Total Alerts' } },
+        y1: { type: 'linear', position: 'right', grid: { display: false }, title: { display: true, text: 'FPR % / Threats' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Admin Noisy Policies Chart
+  charts.noisyPolicies = new Chart(document.getElementById('noisyPoliciesChart'), {
+    type: 'bar',
+    data: {
+      labels: ['SSN_Detection', 'CC_Number', 'PHI_Records', 'Source_Code', 'Confidential'],
+      datasets: [{
+        data: getNoisyPolicies(currentMonth),
+        backgroundColor: '#f43f5e',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#243049' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Tuning Backlog Chart
+  charts.tuningBacklog = new Chart(document.getElementById('tuningBacklogChart'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Open Tickets', data: months.map((_, i) => Math.max(2, 25 - i * 2)), backgroundColor: '#f59e0b' },
+        { label: 'Resolved', data: months.map((_, i) => 5 + i * 3), backgroundColor: '#10b981' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, grid: { color: '#243049' } }
+      }
+    }
+  });
+
+  // Triage Distribution
+  charts.triageDist = new Chart(document.getElementById('triageDistChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['TP - Malicious', 'TP - Negligent', 'FP - Pattern Error', 'FP - Legitimate Use', 'FP - Test Data', 'Policy Mismatch'],
+      datasets: [{
+        data: getTriageDistribution(currentMonth),
+        backgroundColor: ['#f43f5e', '#f59e0b', '#06b6d4', '#8b5cf6', '#94a3b8', '#64748b'],
+        borderColor: '#0a0e1a',
+        borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right' } }
+    }
+  });
+}
+
+function updateCharts() {
+  // Highlight current month bar in ROI chart
+  if (charts.execRoi) {
+    charts.execRoi.data.datasets[0].backgroundColor = charts.execRoi.data.datasets[0].data.map((_, i) =>
+      i === currentMonth - 1 ? '#10b981' : 'rgba(16, 185, 129, 0.3)'
+    );
+    charts.execRoi.update('none');
+  }
+  if (charts.cisoCategory) {
+    charts.cisoCategory.data.datasets[0].data = getCategoryDistribution(currentMonth);
+    charts.cisoCategory.update('none');
+  }
+  if (charts.cisoChannel) {
+    charts.cisoChannel.data.datasets[0].data = getChannelDistribution(currentMonth);
+    charts.cisoChannel.update('none');
+  }
+  if (charts.noisyPolicies) {
+    charts.noisyPolicies.data.datasets[0].data = getNoisyPolicies(currentMonth);
+    charts.noisyPolicies.update('none');
+  }
+  if (charts.triageDist) {
+    charts.triageDist.data.datasets[0].data = getTriageDistribution(currentMonth);
+    charts.triageDist.update('none');
+  }
+}
+
+function updateTriageDistChart() {
+  if (charts.triageDist) {
+    charts.triageDist.data.datasets[0].data = getTriageDistribution(currentMonth);
+    charts.triageDist.update();
+  }
+}
+
+function getCategoryDistribution(month) {
+  const total = monthlyData[month].alerts;
+  // Distribution shifts as program matures
+  if (month <= 3) return [total * 0.35, total * 0.20, total * 0.15, total * 0.15, total * 0.15].map(Math.round);
+  if (month <= 6) return [total * 0.30, total * 0.22, total * 0.18, total * 0.18, total * 0.12].map(Math.round);
+  return [total * 0.25, total * 0.20, total * 0.20, total * 0.22, total * 0.13].map(Math.round);
+}
+
+function getChannelDistribution(month) {
+  const total = monthlyData[month].alerts;
+  if (month <= 3) return [total * 0.40, total * 0.25, total * 0.15, total * 0.12, total * 0.08].map(Math.round);
+  if (month <= 6) return [total * 0.32, total * 0.28, total * 0.18, total * 0.12, total * 0.10].map(Math.round);
+  return [total * 0.25, total * 0.30, total * 0.20, total * 0.13, total * 0.12].map(Math.round);
+}
+
+function getNoisyPolicies(month) {
+  const data = monthlyData[month];
+  const baseline = data.alerts / 10;
+  return [Math.round(baseline * 1.5), Math.round(baseline * 1.2), Math.round(baseline), Math.round(baseline * 0.8), Math.round(baseline * 0.6)];
+}
+
+function getTriageDistribution(month) {
+  const data = monthlyData[month];
+  const total = data.alerts;
+  const tpRate = (100 - data.fpr) / 100;
+  const tpMalicious = Math.round(total * tpRate * 0.3);
+  const tpNegligent = Math.round(total * tpRate * 0.7);
+  const fpPattern = Math.round(total * (data.fpr / 100) * 0.45);
+  const fpLegit = Math.round(total * (data.fpr / 100) * 0.35);
+  const fpTest = Math.round(total * (data.fpr / 100) * 0.15);
+  const policyMismatch = Math.round(total * (data.fpr / 100) * 0.05);
+  return [tpMalicious, tpNegligent, fpPattern, fpLegit, fpTest, policyMismatch];
+}
+
+// ============= LOGS =============
+function updateLogs() {
+  const logs = generateLogsForMonth(currentMonth);
+  const container = document.getElementById('logsGrid');
+  container.innerHTML = logs.map(log => `
+    <div class="log-card">
+      <div class="log-card-header">
+        <span class="log-id">${log.id}</span>
+        <span class="log-severity ${log.severity.toLowerCase()}">${log.severity}</span>
+      </div>
+      <div class="log-category">${log.category}</div>
+      <div class="log-detail"><span class="label">policy:</span> <span class="value">${log.policy}</span></div>
+      <div class="log-detail"><span class="label">user:</span> <span class="value">${log.user.name}@corp · ${log.user.dept}</span></div>
+      <div class="log-detail"><span class="label">data:</span> <span class="value">${log.dataType}</span></div>
+      <div class="log-detail"><span class="label">channel:</span> <span class="value">${log.channel} → ${log.dest}</span></div>
+      <div class="log-detail"><span class="label">file:</span> <span class="value">${log.file}</span></div>
+      <div class="log-verdict">
+        <span class="verdict-badge ${log.verdict}">${log.verdict === 'tp' ? 'TRUE POSITIVE' : 'FALSE POSITIVE'}</span>
+        ${log.blocked ? '<span class="verdict-badge blocked">⛔ BLOCKED</span>' : '<span style="color: var(--text-muted); font-size: 10px;">' + log.action.toUpperCase() + '</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============= TRIAGE SIMULATOR WITH FEEDBACK LOOP =============
+let currentTriageIncident = null;
+let userGeneratedTickets = []; // Persistent across triage actions
+let cumulativeImpact = { alertsReduced: 0, fprDelta: 0, hoursSaved: 0 };
+
+// =====================================================================
+// PRODUCTION-GRADE VERDICT PLAYBOOKS (Forcepoint DLP Manager specific)
+// Each playbook contains everything a DLP Admin needs to apply the change
+// =====================================================================
+const verdictPlaybook = {
+  'tp-malicious': {
+    label: 'True Positive — Malicious',
+    actionType: 'ESCALATE',
+    actionTitle: 'Escalate to Insider Threat Team & Strengthen Detection',
+    actionShort: 'Escalate to Insider Threat Team',
+    actionDetail: 'Preserve forensic evidence, alert HR/Legal, freeze user privileges, strengthen related policies',
+    policyAction: 'Escalate + harden detection',
+    policyChange: { type: 'enforcement', from: 'Alert Only', to: 'Block + Forensic Hold' },
+    impact: { alertsReduced: 0, fprDelta: 0, hoursSaved: 0, threatCaught: 1, riskAvoided: 0.8 },
+    ticketRole: 'Insider Threat Team',
+    color: '#f43f5e',
+    priority: 'Critical',
+    sla: '15 minutes',
+    forcepoint_path: 'Main → Policies → DLP Policies → [Policy Name] → Severity Settings',
+    config_before: [
+      { type: 'section', text: '# CURRENT POLICY STATE' },
+      { type: 'before', text: 'severity: high' },
+      { type: 'before', text: 'action: notify_only' },
+      { type: 'before', text: 'forensic_capture: false' },
+      { type: 'before', text: 'user_freeze_on_match: false' },
+      { type: 'before', text: 'escalation_chain: [SOC]' }
+    ],
+    config_after: [
+      { type: 'section', text: '# UPDATED POLICY STATE' },
+      { type: 'after', text: 'severity: critical' },
+      { type: 'after', text: 'action: block_and_capture' },
+      { type: 'after', text: 'forensic_capture: true' },
+      { type: 'after', text: 'user_freeze_on_match: true     # auto-disable AD account' },
+      { type: 'after', text: 'escalation_chain: [SOC, InsiderThreat, HR, Legal]' },
+      { type: 'after', text: 'evidence_retention_days: 365   # legal hold compliant' },
+      { type: 'after', text: 'siem_forward_priority: P1' }
+    ],
+    ui_steps: [
+      { action: 'Open Forcepoint Security Manager', path: 'https://dlp-manager.corp/sm' },
+      { action: 'Navigate to', path: 'Main → Policies → DLP Policies' },
+      { action: 'Locate the affected policy and click', path: 'Edit Policy' },
+      { action: 'In the Severity tab, change severity from High to', path: 'Critical' },
+      { action: 'In the Action tab, select', path: 'Block + Forensic Capture' },
+      { action: 'Enable', path: 'Auto-disable AD account on match' },
+      { action: 'Add escalation recipients in', path: 'Notifications → Escalation Chain' },
+      { action: 'Click', path: 'Deploy → Deploy to All Endpoints' },
+      { action: 'Verify deployment in', path: 'Status → Deployment Health' }
+    ],
+    approval_chain: [
+      { role: 'SOC L2', name: 'Triage Analyst', status: 'completed', label: 'Triaged' },
+      { role: 'CISO', name: 'Security Lead', status: 'current', label: 'Approval needed' },
+      { role: 'DLP Admin', name: 'Policy Owner', status: 'pending', label: 'Apply change' },
+      { role: 'Insider Threat', name: 'IR Team', status: 'pending', label: 'Investigate' }
+    ],
+    pre_checklist: [
+      'Forensic snapshot of user endpoint captured before any account action',
+      'HR notified per insider threat protocol (silent — no user notification)',
+      'Legal hold issued for user mailbox, OneDrive, and Slack',
+      'Coordinate with HR on user freeze timing to avoid alerting subject'
+    ],
+    rollback: 'Revert severity to High and disable auto-account-freeze via Policy Manager → Audit Log → Restore Previous Version. Forensic captures retained per legal hold regardless of policy rollback.',
+    test_command: 'Send test message matching policy from sandbox account; confirm Block action triggers and SIEM receives P1 alert within 30 seconds.'
+  },
+
+  'tp-negligent': {
+    label: 'True Positive — Negligent',
+    actionType: 'COACH',
+    actionTitle: 'Deploy Just-in-Time Coaching & Track for Repeat Offenses',
+    actionShort: 'JIT Coaching Pop-up',
+    actionDetail: 'Show contextual education to user at moment of violation, log for repeat-offender tracking, route to HR if 3+ strikes',
+    policyAction: 'Add user-facing coaching message',
+    policyChange: { type: 'response', from: 'Block silent', to: 'Block + educate user' },
+    impact: { alertsReduced: 8, fprDelta: 0.05, hoursSaved: 0.4, threatCaught: 1, riskAvoided: 0 },
+    ticketRole: 'Security Awareness Team + DLP Admin',
+    color: '#f59e0b',
+    priority: 'High',
+    sla: '4 hours',
+    forcepoint_path: 'Main → Policies → Action Plans → [Policy Action Plan] → User Notification',
+    config_before: [
+      { type: 'section', text: '# CURRENT ACTION PLAN' },
+      { type: 'before', text: 'on_violation:' },
+      { type: 'before', text: '  block_action: true' },
+      { type: 'before', text: '  user_notification: false' },
+      { type: 'before', text: '  coaching_message: null' },
+      { type: 'before', text: '  repeat_offender_tracking: false' }
+    ],
+    config_after: [
+      { type: 'section', text: '# UPDATED ACTION PLAN' },
+      { type: 'after', text: 'on_violation:' },
+      { type: 'after', text: '  block_action: true' },
+      { type: 'after', text: '  user_notification: true' },
+      { type: 'after', text: '  coaching_message_id: COACH_PII_EXTERNAL_001' },
+      { type: 'after', text: '  show_secure_alternative: true' },
+      { type: 'after', text: '  repeat_offender_tracking: true' },
+      { type: 'after', text: '  escalation_threshold: 3        # 3 strikes → HR' },
+      { type: 'after', text: '  escalation_window_days: 30' },
+      { type: 'comment', text: '# Coaching message template:' },
+      { type: 'comment', text: '# "This action contained sensitive data (PII).' },
+      { type: 'comment', text: '#  Use SecureShare for external transfers."' }
+    ],
+    ui_steps: [
+      { action: 'Navigate to', path: 'Main → Policies → Action Plans' },
+      { action: 'Find the action plan attached to this policy and click', path: 'Edit' },
+      { action: 'In the User Notification tab, toggle on', path: 'Show Coaching Message' },
+      { action: 'Select message template from library or create new at', path: 'Coaching Library → New Template' },
+      { action: 'Set escalation threshold to', path: '3 violations / 30 days' },
+      { action: 'Configure HR notification recipient at', path: 'Escalation → HR Distribution List' },
+      { action: 'Save and click', path: 'Deploy → Push to Endpoint Agents' }
+    ],
+    approval_chain: [
+      { role: 'SOC L1/L2', name: 'Triage Analyst', status: 'completed', label: 'Triaged' },
+      { role: 'Sec Awareness', name: 'Coaching Owner', status: 'current', label: 'Approve message' },
+      { role: 'DLP Admin', name: 'Policy Owner', status: 'pending', label: 'Apply' },
+      { role: 'HR Partner', name: 'Repeat Tracker', status: 'pending', label: 'Monitor' }
+    ],
+    pre_checklist: [
+      'Coaching message text reviewed by Security Awareness team',
+      'Translated for non-English users if applicable',
+      'Manager notification template prepared for 2nd strike',
+      'HR escalation procedure documented for 3rd strike'
+    ],
+    rollback: 'Toggle off "Show Coaching Message" in Action Plan editor. User-facing pop-ups stop within 5 minutes of policy push. Existing strike counts preserved in audit log.',
+    test_command: 'Trigger violation from a test user account; confirm coaching pop-up appears with correct message and "Use SecureShare instead" call-to-action.'
+  },
+
+  'fp-pattern': {
+    label: 'False Positive — Pattern Match Error',
+    actionType: 'TUNE_REGEX',
+    actionTitle: 'Refine Detection Regex to Eliminate Pattern Collisions',
+    actionShort: 'Tighten Regex Pattern',
+    actionDetail: 'Replace loose pattern with strict pattern requiring word boundaries, contextual proximity, or checksum validation (Luhn for cards, Verhoeff for Aadhaar)',
+    policyAction: 'Modify policy regex with stricter matching',
+    policyChange: { type: 'pattern', from: 'Loose pattern (high collision)', to: 'Validated pattern (low collision)' },
+    impact: { alertsReduced: 120, fprDelta: 1.4, hoursSaved: 6, threatCaught: 0, riskAvoided: 0 },
+    ticketRole: 'DLP Admin',
+    color: '#06b6d4',
+    priority: 'Medium',
+    sla: '2 business days',
+    forcepoint_path: 'Main → Policies → Content Classifiers → [Classifier Name] → Pattern Definition',
+    config_before: [
+      { type: 'section', text: '# CURRENT CLASSIFIER (TOO LOOSE)' },
+      { type: 'before', text: 'classifier_id: PII_AADHAAR_LOOSE' },
+      { type: 'before', text: 'pattern_type: regex' },
+      { type: 'before', text: 'regex: \\d{4}\\s?\\d{4}\\s?\\d{4}' },
+      { type: 'before', text: 'validation: none' },
+      { type: 'before', text: 'context_proximity: none' },
+      { type: 'before', text: 'min_matches_to_alert: 1' },
+      { type: 'comment', text: '# Problem: matches phone numbers, invoice IDs,' },
+      { type: 'comment', text: '# product SKUs — anything with 12 consecutive digits' }
+    ],
+    config_after: [
+      { type: 'section', text: '# REFINED CLASSIFIER (PRECISE)' },
+      { type: 'after', text: 'classifier_id: PII_AADHAAR_STRICT_V2' },
+      { type: 'after', text: 'pattern_type: regex_with_validation' },
+      { type: 'after', text: 'regex: \\b[2-9]\\d{3}[\\s-]?\\d{4}[\\s-]?\\d{4}\\b' },
+      { type: 'after', text: 'validation: verhoeff_checksum    # MOSIP standard' },
+      { type: 'after', text: 'context_keywords:' },
+      { type: 'after', text: '  proximity_window: 50_chars' },
+      { type: 'after', text: '  required_one_of: [aadhaar, uid, आधार, identity]' },
+      { type: 'after', text: '  exclusion_keywords: [invoice, sku, phone, tracking]' },
+      { type: 'after', text: 'min_matches_to_alert: 1' },
+      { type: 'after', text: 'confidence_threshold: 0.85' }
+    ],
+    ui_steps: [
+      { action: 'Open', path: 'Main → Policies → Content Classifiers' },
+      { action: 'Search for the noisy classifier and click', path: 'Edit Classifier' },
+      { action: 'Update the regex pattern in', path: 'Pattern Definition tab' },
+      { action: 'Enable', path: 'Validation → Verhoeff Checksum (for Aadhaar)' },
+      { action: 'Add context requirements in', path: 'Context Validation → Proximity Keywords' },
+      { action: 'Add exclusion keywords in', path: 'Context Validation → Exclusions' },
+      { action: 'Test against sample data set in', path: 'Pattern Tester → Run Validation' },
+      { action: 'Confirm reduction in match rate, then', path: 'Save → Deploy to Test Group First' },
+      { action: 'After 24h validation, click', path: 'Promote to Production' }
+    ],
+    approval_chain: [
+      { role: 'SOC L2', name: 'Triage Analyst', status: 'completed', label: 'Identified FP' },
+      { role: 'DLP Admin', name: 'Policy Owner', status: 'current', label: 'Refine pattern' },
+      { role: 'Peer Review', name: 'DLP Admin (2nd)', status: 'pending', label: 'Validate regex' },
+      { role: 'Change Mgmt', name: 'CAB Approval', status: 'pending', label: 'Production push' }
+    ],
+    pre_checklist: [
+      'New regex tested against 1000+ sample dataset (positive + negative)',
+      'False positive reduction validated in Pattern Tester (≥80% reduction expected)',
+      'False negative rate measured and confirmed acceptable (<2%)',
+      'Peer-reviewed by second DLP Admin per change management policy',
+      'Deployed to Test Endpoint Group for 24-hour soak before production'
+    ],
+    rollback: 'In Forcepoint Policy Manager, navigate to Audit Log → Find this change → Click "Restore Previous Version". Old classifier reactivated within 5 minutes. All alerts during rollback period are retained for review.',
+    test_command: 'Run: dlp-cli classifier test --id PII_AADHAAR_STRICT_V2 --sample-set /samples/aadhaar_validation.csv. Expected output: 95%+ true positive rate, <5% false positive rate against test corpus.'
+  },
+
+  'fp-legitimate': {
+    label: 'False Positive — Legitimate Business Use',
+    actionType: 'WHITELIST',
+    actionTitle: 'Create Conditional Exception for Approved Business Workflow',
+    actionShort: 'Add Conditional Whitelist',
+    actionDetail: 'Add a context-aware exception for the specific approved business workflow without weakening overall policy enforcement',
+    policyAction: 'Add conditional exception with audit trail',
+    policyChange: { type: 'exception', from: 'Universal block', to: 'Conditional block (workflow-aware)' },
+    impact: { alertsReduced: 85, fprDelta: 1.0, hoursSaved: 4.2, threatCaught: 0, riskAvoided: 0 },
+    ticketRole: 'DLP Admin + Business Process Owner',
+    color: '#8b5cf6',
+    priority: 'Medium',
+    sla: '3 business days',
+    forcepoint_path: 'Main → Policies → DLP Policies → [Policy] → Exceptions → Conditional Rules',
+    config_before: [
+      { type: 'section', text: '# CURRENT POLICY EXCEPTIONS' },
+      { type: 'before', text: 'exceptions: []' },
+      { type: 'before', text: 'enforcement: block_all_matches' },
+      { type: 'comment', text: '# Problem: legitimate Finance reconciliation' },
+      { type: 'comment', text: '# workflow blocked daily, generating noise' }
+    ],
+    config_after: [
+      { type: 'section', text: '# CONDITIONAL EXCEPTION ADDED' },
+      { type: 'after', text: 'exceptions:' },
+      { type: 'after', text: '  - exception_id: EXC_2026_FINANCE_RECON_001' },
+      { type: 'after', text: '    name: "Finance Daily Reconciliation"' },
+      { type: 'after', text: '    business_owner: cfo@corp.com' },
+      { type: 'after', text: '    approver: ciso@corp.com' },
+      { type: 'after', text: '    valid_until: "2027-04-16"' },
+      { type: 'after', text: '    conditions:' },
+      { type: 'after', text: '      sender_group: AD_GROUP_FIN_RECON_USERS' },
+      { type: 'after', text: '      recipient_domain: "@payments-processor.com"' },
+      { type: 'after', text: '      time_window: "Mon-Fri, 06:00-10:00 IST"' },
+      { type: 'after', text: '      max_records_per_transfer: 5000' },
+      { type: 'after', text: '      encryption_required: true' },
+      { type: 'after', text: '    action: allow_with_audit_log' },
+      { type: 'after', text: '    audit_retention_days: 730  # PCI-DSS req' }
+    ],
+    ui_steps: [
+      { action: 'Navigate to', path: 'Main → Policies → DLP Policies' },
+      { action: 'Open the affected policy and click', path: 'Exceptions tab' },
+      { action: 'Click', path: '+ Add Conditional Exception' },
+      { action: 'Set sender group to', path: 'AD Group → Browse → Select Finance Recon Users' },
+      { action: 'Set recipient domain whitelist to', path: '@payments-processor.com' },
+      { action: 'Set time window to', path: 'Mon-Fri 06:00-10:00 IST' },
+      { action: 'Enable', path: 'Audit Logging → Retain 730 days (PCI-DSS)' },
+      { action: 'Set business owner and approver in', path: 'Governance → Owner Assignment' },
+      { action: 'Set expiration to', path: '12 months from today (annual review)' },
+      { action: 'Click', path: 'Save → Deploy → Push to All Endpoints' }
+    ],
+    approval_chain: [
+      { role: 'SOC L2', name: 'Triage Analyst', status: 'completed', label: 'Identified FP' },
+      { role: 'Business Owner', name: 'CFO Office', status: 'current', label: 'Confirm workflow' },
+      { role: 'CISO', name: 'Security Approval', status: 'pending', label: 'Risk acceptance' },
+      { role: 'DLP Admin', name: 'Implementer', status: 'pending', label: 'Apply exception' }
+    ],
+    pre_checklist: [
+      'Business justification documented and signed by department head',
+      'Risk assessment completed and accepted by CISO office',
+      'AD group membership audited (only authorized users included)',
+      'Audit logging configured per PCI-DSS retention requirements (730 days)',
+      'Exception scheduled for mandatory annual review (12 months)',
+      'Compensating controls documented (encryption, time window, record limits)'
+    ],
+    rollback: 'In Policy Exceptions tab, locate exception by ID and click "Revoke". Universal block resumes within 5 minutes. All transfers during exception period remain in audit log for compliance review. Notify business owner before revoking.',
+    test_command: 'Test 1: Send matching content from authorized AD group user to whitelisted domain → expect ALLOW + audit log entry. Test 2: Send same content from non-AD-group user → expect BLOCK. Test 3: Send outside time window → expect BLOCK.'
+  }
+};
+
+function generateNewTriageIncident() {
+  const logs = generateLogsForMonth(currentMonth);
+  currentTriageIncident = logs[Math.floor(Math.random() * logs.length)];
+  document.getElementById('triageIncident').innerHTML = `
+    <div style="color: var(--accent-cyan); margin-bottom: 12px; font-size: 11px;">⊙ INCIDENT ${currentTriageIncident.id}</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; color: var(--text-secondary);">
+      <div><span style="color: var(--text-muted);">Severity:</span> <span style="color: var(--text-primary);">${currentTriageIncident.severity}</span></div>
+      <div><span style="color: var(--text-muted);">Category:</span> <span style="color: var(--text-primary);">${currentTriageIncident.category}</span></div>
+      <div><span style="color: var(--text-muted);">User:</span> <span style="color: var(--text-primary);">${currentTriageIncident.user.name} (${currentTriageIncident.user.dept})</span></div>
+      <div><span style="color: var(--text-muted);">User Risk:</span> <span style="color: var(--text-primary);">${currentTriageIncident.user.risk}</span></div>
+      <div><span style="color: var(--text-muted);">Channel:</span> <span style="color: var(--text-primary);">${currentTriageIncident.channel}</span></div>
+      <div><span style="color: var(--text-muted);">Destination:</span> <span style="color: var(--text-primary);">${currentTriageIncident.dest}</span></div>
+      <div><span style="color: var(--text-muted);">Policy:</span> <span style="color: var(--text-primary);">${currentTriageIncident.policy}</span></div>
+      <div><span style="color: var(--text-muted);">Action Taken:</span> <span style="color: var(--text-primary);">${currentTriageIncident.action}</span></div>
+      <div style="grid-column: 1/-1;"><span style="color: var(--text-muted);">File:</span> <span style="color: var(--text-primary);">${currentTriageIncident.file}</span></div>
+      <div style="grid-column: 1/-1;"><span style="color: var(--text-muted);">Data Detected:</span> <span style="color: var(--text-primary);">${currentTriageIncident.dataType}</span></div>
+    </div>
+  `;
+  document.getElementById('triageResult').classList.remove('show');
+  document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('flowStep1').classList.add('active');
+}
+
+function handleTriageVerdict(verdict) {
+  if (!currentTriageIncident) return;
+
+  const playbook = verdictPlaybook[verdict];
+  const correct = currentTriageIncident.verdict === 'tp' ? ['tp-malicious', 'tp-negligent'] : ['fp-pattern', 'fp-legitimate'];
+  const isCorrect = correct.includes(verdict);
+
+  document.getElementById('flowStep2').classList.add('active');
+  setTimeout(() => document.getElementById('flowStep3').classList.add('active'), 400);
+
+  const result = document.getElementById('triageResult');
+  result.innerHTML = `
+    <div style="color: ${isCorrect ? 'var(--accent-emerald)' : 'var(--accent-amber)'}; font-weight: 600; margin-bottom: 8px;">
+      ${isCorrect ? '✓ Reasonable categorization' : '⚠ Worth reviewing — see ground truth below'}
+    </div>
+    <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
+      <strong style="color: var(--text-primary);">Action triggered:</strong> ${playbook.actionTitle}<br>
+      <span style="font-size: 12px;">${playbook.actionDetail}</span>
+    </div>
+
+    <div class="policy-affected">
+      <div class="policy-name">⚙ Policy Affected: ${currentTriageIncident.policy}</div>
+      <div class="policy-change">
+        <div class="policy-before">${playbook.policyChange.from}</div>
+        <div class="policy-arrow">→</div>
+        <div class="policy-after">${playbook.policyChange.to}</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; font-size: 12px;">
+      <strong style="color: var(--accent-cyan);">→ Tuning ticket auto-generated</strong> and routed to <strong>${playbook.ticketRole}</strong>.
+      ${playbook.impact.alertsReduced > 0 ? `Estimated impact: <strong style="color: var(--accent-emerald);">−${playbook.impact.alertsReduced} alerts/month</strong>, FPR drop <strong style="color: var(--accent-emerald);">−${playbook.impact.fprDelta}%</strong>.` : 'No FPR impact — this is a true positive that validates the policy.'}
+      <br><span style="color: var(--text-muted); font-size: 11px;">Click the ticket below for full implementation details (regex, UI steps, approval chain, rollback plan).</span>
+    </div>
+
+    <div style="color: var(--text-muted); font-size: 11px; padding-top: 12px; margin-top: 12px; border-top: 1px solid var(--border);">
+      Ground truth: This was a <strong style="color: ${currentTriageIncident.verdict === 'tp' ? 'var(--accent-rose)' : 'var(--accent-amber)'};">${currentTriageIncident.verdict === 'tp' ? 'true positive' : 'false positive'}</strong>.
+      In Month ${currentMonth}, the system generates ${monthlyData[currentMonth].fpr}% false positives.
+    </div>
+  `;
+  result.classList.add('show');
+
+  createTuningTicket(verdict, playbook, isCorrect);
+
+  cumulativeImpact.alertsReduced += playbook.impact.alertsReduced;
+  cumulativeImpact.fprDelta += playbook.impact.fprDelta;
+  cumulativeImpact.hoursSaved += playbook.impact.hoursSaved;
+  updateImpactMeter();
+}
+
+function createTuningTicket(verdict, playbook, isCorrect) {
+  const ticketId = 'TKT-2026-' + String(currentMonth).padStart(2, '0') + '-' + String(userGeneratedTickets.length + 1001).padStart(4, '0');
+
+  const ticket = {
+    id: ticketId,
+    month: currentMonth,
+    verdict: verdict,
+    playbook: playbook,
+    incident: currentTriageIncident,
+    status: 'open',
+    createdAt: new Date().toLocaleString(),
+    isCorrect: isCorrect
+  };
+
+  userGeneratedTickets.unshift(ticket);
+  renderTicketList();
+  updateTicketCounts();
+}
+
+function renderTicketList() {
+  const container = document.getElementById('ticketList');
+
+  if (userGeneratedTickets.length === 0) {
+    container.innerHTML = `
+      <div class="tickets-empty">
+        <span class="icon">⊞</span>
+        No tickets generated yet. Triage an incident above to see how your decisions flow into the tuning pipeline.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = userGeneratedTickets.map(ticket => `
+    <div class="ticket-item ${ticket.status}" style="border-left-color: ${ticket.playbook.color};">
+      <div class="ticket-header">
+        <span class="ticket-id">${ticket.id} · M${ticket.month} · ${ticket.playbook.priority} priority · SLA: ${ticket.playbook.sla}</span>
+        <span class="ticket-status ${ticket.status}">${ticket.status}</span>
+      </div>
+      <div class="ticket-title">${ticket.playbook.actionTitle}</div>
+      <div class="ticket-detail"><span class="label">verdict:</span> ${ticket.playbook.label}</div>
+      <div class="ticket-detail"><span class="label">policy:</span> ${ticket.incident.policy}</div>
+      <div class="ticket-detail"><span class="label">routed to:</span> ${ticket.playbook.ticketRole}</div>
+      <div class="ticket-detail"><span class="label">forcepoint path:</span> ${ticket.playbook.forcepoint_path}</div>
+      <div class="ticket-detail"><span class="label">change:</span> <span style="color: var(--accent-rose);">${ticket.playbook.policyChange.from}</span> → <span style="color: var(--accent-emerald);">${ticket.playbook.policyChange.to}</span></div>
+
+      <button class="ticket-expand-btn" onclick="openTicketModal('${ticket.id}')">
+        <span>▤ View Full Implementation Details (config diff, UI steps, approvals, rollback)</span>
+        <span>→</span>
+      </button>
+
+      <div class="ticket-action">
+        <span class="ticket-impact">
+          ${ticket.status === 'resolved' ?
+            '✓ Applied · ' + (ticket.playbook.impact.alertsReduced > 0 ? '−' + ticket.playbook.impact.alertsReduced + ' alerts/mo' : 'Threat documented')
+            :
+            (ticket.playbook.impact.alertsReduced > 0 ? 'Projected: −' + ticket.playbook.impact.alertsReduced + ' alerts/mo · −' + ticket.playbook.impact.fprDelta + '% FPR' : 'Validates current policy')
+          }
+        </span>
+        ${ticket.status === 'open' ?
+          `<button class="ticket-action-btn" onclick="resolveTicket('${ticket.id}')">Apply Tuning</button>`
+          : '<span style="font-size: 10px; color: var(--text-muted);">Logged in DLP Admin timeline</span>'
+        }
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============= ENTERPRISE TICKET MODAL =============
+function openTicketModal(ticketId) {
+  const ticket = userGeneratedTickets.find(t => t.id === ticketId);
+  if (!ticket) return;
+
+  const pb = ticket.playbook;
+  const inc = ticket.incident;
+
+  const renderCodeBlock = (lines) => lines.map(line => {
+    const cls = line.type === 'before' ? 'before' :
+                line.type === 'after' ? 'after' :
+                line.type === 'comment' ? 'comment' :
+                line.type === 'section' ? 'section' : '';
+    return `<div class="code-line ${cls}">${escapeHtml(line.text)}</div>`;
+  }).join('');
+
+  const modal = document.getElementById('ticketModal');
+  modal.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title-block">
+        <div class="modal-ticket-id">${ticket.id} · Created ${ticket.createdAt}</div>
+        <div class="modal-title">${pb.actionTitle}</div>
+      </div>
+      <button class="modal-close" onclick="closeTicketModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="ticket-meta-strip">
+        <div class="meta-cell priority-${pb.priority.toLowerCase()}">
+          <div class="meta-cell-label">Priority</div>
+          <div class="meta-cell-value">${pb.priority}</div>
+        </div>
+        <div class="meta-cell">
+          <div class="meta-cell-label">SLA</div>
+          <div class="meta-cell-value">${pb.sla}</div>
+        </div>
+        <div class="meta-cell">
+          <div class="meta-cell-label">Owner</div>
+          <div class="meta-cell-value">${pb.ticketRole}</div>
+        </div>
+        <div class="meta-cell">
+          <div class="meta-cell-label">Status</div>
+          <div class="meta-cell-value">${ticket.status.toUpperCase()}</div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: SOURCE INCIDENT -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">1</div>
+          <div class="ticket-section-title">Source Incident</div>
+          <span class="ticket-section-pill">Triggering event</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary);">
+          <div><span style="color: var(--text-muted);">Incident ID:</span> ${inc.id}</div>
+          <div><span style="color: var(--text-muted);">Severity:</span> ${inc.severity}</div>
+          <div><span style="color: var(--text-muted);">User:</span> ${inc.user.name} (${inc.user.dept})</div>
+          <div><span style="color: var(--text-muted);">Channel:</span> ${inc.channel}</div>
+          <div><span style="color: var(--text-muted);">Policy:</span> ${inc.policy}</div>
+          <div><span style="color: var(--text-muted);">Data type:</span> ${inc.dataType}</div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: APPROVAL WORKFLOW -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">2</div>
+          <div class="ticket-section-title">Approval Workflow</div>
+          <span class="ticket-section-pill">Change management</span>
+        </div>
+        <div class="approval-flow">
+          ${pb.approval_chain.map(stage => `
+            <div class="approval-stage ${stage.status}">
+              <div class="approval-role">${stage.role}</div>
+              <div class="approval-name">${stage.name}</div>
+              <div class="approval-status">${stage.status === 'completed' ? '✓' : stage.status === 'current' ? '●' : '○'} ${stage.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- SECTION 3: PRE-CHANGE CHECKLIST -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">3</div>
+          <div class="ticket-section-title">Pre-Change Checklist</div>
+          <span class="ticket-section-pill">Required before applying</span>
+        </div>
+        <ul class="checklist">
+          ${pb.pre_checklist.map((item, i) => `
+            <li class="checklist-item" onclick="this.classList.toggle('checked'); this.querySelector('.checklist-checkbox').textContent = this.classList.contains('checked') ? '✓' : '';">
+              <div class="checklist-checkbox"></div>
+              <div>${item}</div>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+
+      <!-- SECTION 4: CONFIGURATION CHANGE -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">4</div>
+          <div class="ticket-section-title">Configuration Change (Forcepoint Policy YAML)</div>
+          <span class="ticket-section-pill">Code-level diff</span>
+        </div>
+        <div class="code-block-label">
+          <span>POLICY CONFIG · BEFORE → AFTER</span>
+          <button class="copy-btn" onclick="copyToClipboard(this, ${JSON.stringify(JSON.stringify(pb.config_before.concat(pb.config_after).map(l => l.text).join('\n')))})">Copy</button>
+        </div>
+        <div class="code-block">
+          ${renderCodeBlock(pb.config_before)}
+          ${renderCodeBlock(pb.config_after)}
+        </div>
+      </div>
+
+      <!-- SECTION 5: UI NAVIGATION STEPS -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">5</div>
+          <div class="ticket-section-title">Forcepoint UI Navigation Steps</div>
+          <span class="ticket-section-pill">Click-by-click guide</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          → Path: <span style="color: var(--accent-cyan);">${pb.forcepoint_path}</span>
+        </div>
+        <ol class="nav-steps">
+          ${pb.ui_steps.map(step => `
+            <li class="nav-step">
+              <span class="nav-action">${step.action}</span> <span class="nav-path">${step.path}</span>
+            </li>
+          `).join('')}
+        </ol>
+      </div>
+
+      <!-- SECTION 6: VALIDATION & TESTING -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">6</div>
+          <div class="ticket-section-title">Validation & Testing</div>
+          <span class="ticket-section-pill">Verify before promotion</span>
+        </div>
+        <div class="code-block-label">
+          <span>VALIDATION COMMAND</span>
+          <button class="copy-btn" onclick="copyToClipboard(this, ${JSON.stringify(JSON.stringify(pb.test_command))})">Copy</button>
+        </div>
+        <div class="code-block">
+          <div class="code-line">${escapeHtml(pb.test_command)}</div>
+        </div>
+      </div>
+
+      <!-- SECTION 7: IMPACT FORECAST -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">7</div>
+          <div class="ticket-section-title">Impact Forecast (Per Month)</div>
+          <span class="ticket-section-pill">Expected after deployment</span>
+        </div>
+        <div class="forecast-grid">
+          <div class="forecast-card">
+            <div class="forecast-value">${pb.impact.alertsReduced > 0 ? '−' + pb.impact.alertsReduced : '+1'}</div>
+            <div class="forecast-label">${pb.impact.alertsReduced > 0 ? 'Alerts Reduced' : 'Threats Detected'}</div>
+          </div>
+          <div class="forecast-card">
+            <div class="forecast-value">${pb.impact.fprDelta > 0 ? '−' + pb.impact.fprDelta + '%' : '0%'}</div>
+            <div class="forecast-label">FPR Reduction</div>
+          </div>
+          <div class="forecast-card">
+            <div class="forecast-value">${pb.impact.hoursSaved > 0 ? '−' + pb.impact.hoursSaved + ' hr' : '↑ value'}</div>
+            <div class="forecast-label">Analyst Hours Saved/Wk</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 8: ROLLBACK PLAN -->
+      <div class="ticket-section">
+        <div class="ticket-section-header">
+          <div class="ticket-section-icon">8</div>
+          <div class="ticket-section-title">Rollback Plan</div>
+          <span class="ticket-section-pill">If issues arise</span>
+        </div>
+        <div class="rollback-block">
+          <div class="rollback-title">▽ Emergency Rollback Procedure</div>
+          ${pb.rollback}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <div class="footer-status">
+        <span style="color: var(--text-muted);">Ticket ${ticket.id}</span>
+        <span style="color: var(--text-muted);">·</span>
+        <span style="color: var(--text-secondary);">${ticket.status === 'resolved' ? '✓ Applied to production' : 'Awaiting DLP Admin action'}</span>
+      </div>
+      <div class="footer-actions">
+        <button class="btn" onclick="closeTicketModal()">Close</button>
+        ${ticket.status === 'open' ? `
+          <button class="btn btn-primary" onclick="exportTicket('${ticket.id}')">Export Change Request</button>
+          <button class="btn btn-success" onclick="resolveTicket('${ticket.id}'); closeTicketModal();">✓ Mark as Applied</button>
+        ` : '<button class="btn" disabled>✓ Already Applied</button>'}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('ticketModalOverlay').classList.add('show');
+}
+
+function closeTicketModal() {
+  document.getElementById('ticketModalOverlay').classList.remove('show');
+}
+
+function copyToClipboard(btn, jsonStr) {
+  const text = JSON.parse(jsonStr);
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function exportTicket(ticketId) {
+  const ticket = userGeneratedTickets.find(t => t.id === ticketId);
+  if (!ticket) return;
+  const pb = ticket.playbook;
+  const exportText = `
+DLP TUNING CHANGE REQUEST
+==========================
+Ticket ID: ${ticket.id}
+Created:   ${ticket.createdAt}
+Priority:  ${pb.priority}
+SLA:       ${pb.sla}
+Owner:     ${pb.ticketRole}
+
+ACTION
+------
+${pb.actionTitle}
+
+${pb.actionDetail}
+
+POLICY AFFECTED
+---------------
+${ticket.incident.policy}
+Forcepoint Path: ${pb.forcepoint_path}
+
+CHANGE
+------
+FROM: ${pb.policyChange.from}
+TO:   ${pb.policyChange.to}
+
+CONFIGURATION DIFF
+------------------
+${pb.config_before.map(l => l.type === 'before' ? '- ' + l.text : l.text).join('\n')}
+${pb.config_after.map(l => l.type === 'after' ? '+ ' + l.text : l.text).join('\n')}
+
+UI NAVIGATION
+-------------
+${pb.ui_steps.map((s, i) => `${i+1}. ${s.action}: ${s.path}`).join('\n')}
+
+PRE-CHANGE CHECKLIST
+--------------------
+${pb.pre_checklist.map(c => '[ ] ' + c).join('\n')}
+
+VALIDATION
+----------
+${pb.test_command}
+
+IMPACT FORECAST
+---------------
+- Alerts reduced/month: ${pb.impact.alertsReduced}
+- FPR reduction: ${pb.impact.fprDelta}%
+- Analyst hours saved/week: ${pb.impact.hoursSaved}
+
+ROLLBACK PLAN
+-------------
+${pb.rollback}
+
+APPROVAL CHAIN
+--------------
+${pb.approval_chain.map(a => `- ${a.role} (${a.name}): ${a.status} - ${a.label}`).join('\n')}
+`;
+  const blob = new Blob([exportText.trim()], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = ticket.id + '_change_request.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Make functions globally accessible for inline onclick handlers
+window.openTicketModal = openTicketModal;
+window.closeTicketModal = closeTicketModal;
+window.copyToClipboard = copyToClipboard;
+window.exportTicket = exportTicket;
+
+function resolveTicket(ticketId) {
+  const ticket = userGeneratedTickets.find(t => t.id === ticketId);
+  if (!ticket) return;
+  ticket.status = 'resolved';
+  ticket.resolvedAt = new Date().toLocaleString();
+
+  // Add to the global tuning timeline as a user-generated action
+  tuningActions.push({
+    month: currentMonth,
+    role: ticket.playbook.ticketRole,
+    title: ticket.playbook.actionTitle + ' (' + ticket.incident.policy + ')',
+    description: ticket.playbook.actionDetail + ' Triggered by analyst triage of incident ' + ticket.incident.id + '.',
+    impact: ticket.playbook.impact.alertsReduced > 0 ?
+      '−' + ticket.playbook.impact.alertsReduced + ' monthly alerts, −' + ticket.playbook.impact.fprDelta + '% FPR' :
+      'Threat captured and documented for forensic review',
+    userGenerated: true
+  });
+
+  renderTicketList();
+  updateTicketCounts();
+  updateTuningTimeline(); // Refresh timeline to show new action
+}
+window.resolveTicket = resolveTicket; // Expose for inline onclick handlers
+
+function updateTicketCounts() {
+  const open = userGeneratedTickets.filter(t => t.status === 'open').length;
+  const resolved = userGeneratedTickets.filter(t => t.status === 'resolved').length;
+  document.getElementById('ticketCountOpen').textContent = open;
+  document.getElementById('ticketCountResolved').textContent = resolved;
+  document.getElementById('ticketCountTotal').textContent = userGeneratedTickets.length;
+}
+
+function updateImpactMeter() {
+  if (cumulativeImpact.alertsReduced === 0 && cumulativeImpact.fprDelta === 0) {
+    document.getElementById('impactMeter').style.display = 'none';
+    return;
+  }
+  document.getElementById('impactMeter').style.display = 'block';
+  document.getElementById('impactAlertsReduced').textContent = '−' + cumulativeImpact.alertsReduced.toLocaleString();
+  document.getElementById('impactFprDelta').textContent = '−' + cumulativeImpact.fprDelta.toFixed(1) + '%';
+  document.getElementById('impactHoursSaved').textContent = '−' + cumulativeImpact.hoursSaved.toFixed(1);
+}
+
+// ============= TUNING TIMELINE =============
+function updateTuningTimeline() {
+  const visible = tuningActions.filter(a => a.month <= currentMonth);
+  const container = document.getElementById('tuningTimeline');
+
+  // Update counters in header
+  const countEl = document.getElementById('timelineCount');
+  const userCountEl = document.getElementById('timelineUserCount');
+  if (countEl) countEl.textContent = visible.length;
+  if (userCountEl) userCountEl.textContent = visible.filter(a => a.userGenerated).length;
+
+  if (visible.length === 0) {
+    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">No tuning actions yet — initial deployment in progress.</div>';
+    return;
+  }
+  // Sort: most recent month first, then user-generated within same month appear at top
+  const sorted = [...visible].sort((a, b) => {
+    if (b.month !== a.month) return b.month - a.month;
+    return (b.userGenerated ? 1 : 0) - (a.userGenerated ? 1 : 0);
+  });
+  container.innerHTML = sorted.map(action => `
+    <div class="timeline-item ${action.userGenerated ? 'user-generated' : ''}">
+      <div class="timeline-marker">M${action.month}</div>
+      <div class="timeline-content">
+        <div class="timeline-title">
+          ${action.title}
+          ${action.userGenerated ? '<span class="user-generated-badge">From your triage</span>' : ''}
+        </div>
+        <div class="timeline-meta">${action.role} · Month ${action.month}</div>
+        <div class="timeline-description">${action.description}</div>
+        <div class="timeline-impact">→ Impact: ${action.impact}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============= ROLE SWIMLANE =============
+const roles = [
+  { name: 'DLP Administrator', title: 'Policy Owner', avatar: '⚙', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+  { name: 'SOC L1/L2 Analyst', title: 'Triage & Response', avatar: '⊙', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12] },
+  { name: 'Compliance Officer', title: 'Regulatory Alignment', avatar: '⚖', activeMonths: [2,3,6,9,11,12] },
+  { name: 'Department Liaisons', title: 'Workflow Validation', avatar: '◆', activeMonths: [2,3,4,5,8] },
+  { name: 'HR Partner', title: 'Repeat Offender Mgmt', avatar: '⊕', activeMonths: [4,5,6,7,8,9,10,11,12] },
+  { name: 'Security Awareness', title: 'User Education', avatar: '◐', activeMonths: [5,6,7,8,9,10,11,12] },
+  { name: 'Insider Threat Team', title: 'Behavioral Analytics', avatar: '◈', activeMonths: [7,8,9,10,11,12] },
+  { name: 'Business Process Owners', title: 'Workflow Approval', avatar: '⊞', activeMonths: [8,9,10,11,12] },
+  { name: 'SOC Engineering', title: 'SOAR & Automation', avatar: '⟁', activeMonths: [10,11,12] },
+  { name: 'CISO', title: 'Strategic Oversight', avatar: '◆', activeMonths: [3,6,9,11,12] },
+  { name: 'CEO / Board', title: 'Executive Review', avatar: '◇', activeMonths: [6,12] }
+];
+
+function initSwimlane() {
+  const container = document.getElementById('swimlaneContainer');
+  container.innerHTML = roles.map(role => `
+    <div class="role-row">
+      <div class="role-info">
+        <div class="role-avatar">${role.avatar}</div>
+        <div>
+          <div class="role-name">${role.name}</div>
+          <div class="role-title">${role.title}</div>
+        </div>
+      </div>
+      <div class="role-months">
+        ${Array.from({length: 12}, (_, i) => {
+          const month = i + 1;
+          const isActive = role.activeMonths.includes(month);
+          return `<div class="role-month-cell ${isActive ? 'active' : ''}" data-month="${month}" data-role="${role.name}">
+            <div class="cell-tooltip">M${month} · ${isActive ? 'Active' : 'Standby'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateSwimlane() {
+  document.querySelectorAll('.role-month-cell').forEach(cell => {
+    cell.classList.toggle('current', parseInt(cell.dataset.month) === currentMonth);
+  });
+}
+</script>
+</body>
+</html>
